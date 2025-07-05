@@ -1,0 +1,200 @@
+/* 控制面板样式 */
+.control-panel {
+  height: 100%;
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+  margin: 0;
+  padding: 16px;
+}
+
+.control-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.control-column {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.control-section {
+  margin-bottom: 8px;
+}
+
+.control-section.compact {
+  margin-bottom: 4px;
+}
+
+.control-section:last-child {
+  margin-bottom: 0;
+}
+
+.control-section h3 {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-section {
+  display: flex;
+  align-items: center;
+  padding: 6px 8px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-tertiary);
+  font-size: 11px;
+  margin-bottom: 4px;
+}
+
+.status-section .status-active {
+  color: var(--success-color);
+  font-weight: 500;
+}
+
+.control-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* 监控按钮样式 */
+.control-buttons .btn:not(.block-btn) {
+  min-width: 100px;
+  font-weight: 600;
+}
+
+.control-description {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+/* 开关样式 */
+.control-switches {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ControlPanel 响应式布局增强 */
+.control-panel-container {
+  container-type: size;
+}
+
+.control-panel {
+  padding: 12px;
+  background-color: var(--bg-primary);
+  height: 100%;
+  overflow-y: auto;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.control-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  height: 100%;
+}
+
+.control-column {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.control-section {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 12px;
+}
+
+.control-section.compact {
+  padding: 8px;
+}
+
+.control-section h3 {
+  margin: 0 0 8px 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.control-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.status-section {
+  padding: 8px;
+  border-radius: var(--radius);
+  text-align: center;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.status-active {
+  background-color: rgba(40, 167, 69, 0.1);
+  color: var(--success-color);
+  border: 1px solid rgba(40, 167, 69, 0.3);
+}
+
+/* 在较小空间时调整ControlPanel布局 */
+@container (max-width: 290px) {
+  .control-grid {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .control-section {
+    padding: 6px;
+  }
+
+  .control-section h3 {
+    font-size: 10px;
+    margin-bottom: 4px;
+  }
+
+  .control-buttons {
+    gap: 4px;
+  }
+
+  .status-section {
+    padding: 6px;
+    font-size: 10px;
+  }
+}
+
+/* 在很小空间时进一步压缩 */
+@container (max-height: 120px) {
+  .control-panel {
+    padding: 8px;
+  }
+
+  .control-grid {
+    gap: 4px;
+  }
+
+  .control-section {
+    padding: 4px;
+  }
+
+  .control-section h3 {
+    font-size: 9px;
+    margin-bottom: 2px;
+  }
+
+  .control-buttons .btn {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+} 

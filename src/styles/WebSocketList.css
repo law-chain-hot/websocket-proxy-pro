@@ -1,0 +1,213 @@
+/* WebSocket连接列表样式 */
+.websocket-list {
+  height: 100%;
+  background-color: transparent;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.websocket-list-header {
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  padding: 16px;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.header-info h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--text-primary);
+}
+
+.connection-stats {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.clear-connections-btn {
+  font-size: 11px;
+  padding: 6px 10px;
+  background-color: var(--danger-color);
+  color: white;
+  border: 1px solid var(--danger-color);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.clear-connections-btn:hover {
+  background-color: #c82333;
+  border-color: #c82333;
+}
+
+/* 连接容器 */
+.connections-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 16px;
+}
+
+.connection-item {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 12px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.connection-item:hover {
+  background-color: var(--bg-tertiary);
+  border-color: var(--accent-color);
+}
+
+.connection-item.selected {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+  color: white;
+}
+
+.connection-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.connection-status {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.status-indicator {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.status-text {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.connection-id {
+  font-size: 10px;
+  background-color: var(--bg-tertiary);
+  padding: 2px 6px;
+  border-radius: 10px;
+  color: var(--text-muted);
+  font-family: "Courier New", monospace;
+}
+
+.connection-item.selected .connection-id {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.connection-url {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  word-break: break-all;
+  line-height: 1.3;
+}
+
+.connection-item.selected .connection-url {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.connection-info {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  font-size: 11px;
+}
+
+.info-item {
+  display: flex;
+  gap: 4px;
+}
+
+.info-label {
+  color: var(--text-muted);
+}
+
+.info-value {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.connection-item.selected .info-label,
+.connection-item.selected .info-value {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* 空状态 */
+.websocket-list-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 连接分组样式 */
+.connection-group {
+  margin-bottom: 16px;
+}
+
+.connection-group:last-child {
+  margin-bottom: 0;
+}
+
+.connection-group-header {
+  background-color: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-color);
+  padding: 8px 12px;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.connection-group-header.clickable {
+  transition: background-color 0.2s;
+}
+
+.connection-group-header.clickable:hover {
+  background-color: var(--bg-secondary);
+}
+
+.connection-group-header h4 {
+  font-size: 12px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.connection-group-content {
+  border: 1px solid var(--border-color);
+  border-top: none;
+  border-radius: 0 0 var(--radius) var(--radius);
+  padding: 4px;
+}
+
+.connection-group-content .connection-item {
+  margin-bottom: 4px;
+}
+
+.connection-group-content .connection-item:last-child {
+  margin-bottom: 0;
+} 

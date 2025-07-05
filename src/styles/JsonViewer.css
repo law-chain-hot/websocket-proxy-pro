@@ -1,0 +1,262 @@
+/* JsonViewer 组件样式 */
+.json-viewer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.json-viewer-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.json-viewer-controls-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.json-viewer-controls-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.json-viewer-wrap-control {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.json-viewer-wrap-control input[type="checkbox"] {
+  width: 12px;
+  height: 12px;
+  margin: 0;
+  cursor: pointer;
+}
+
+.json-viewer-wrap-text {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.json-viewer-status {
+  font-size: 10px;
+  color: var(--success-color);
+  font-weight: 600;
+  background-color: rgba(40, 167, 69, 0.1);
+  padding: 2px 6px;
+  border-radius: 8px;
+  border: 1px solid rgba(40, 167, 69, 0.3);
+}
+
+.json-viewer-copy-btn {
+  padding: 4px 8px;
+  font-size: 11px;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 3px;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.json-viewer-copy-btn:hover {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--accent-color);
+}
+
+.json-viewer-copy-btn.copied {
+  background-color: var(--success-color);
+  color: white;
+  border-color: var(--success-color);
+}
+
+.json-viewer-copy-btn.copied:hover {
+  background-color: var(--success-color);
+  border-color: var(--success-color);
+}
+
+.json-viewer-container {
+  flex: 1;
+  overflow: hidden;
+  background-color: var(--bg-primary);
+  position: relative;
+  min-height: 0;
+}
+
+.json-viewer-codemirror {
+  height: 100%;
+  width: 100%;
+}
+
+.json-viewer-codemirror .cm-editor {
+  height: 100%;
+  border: none;
+  background: transparent;
+}
+
+.json-viewer-codemirror .cm-scroller {
+  overflow-x: auto;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+  max-height: 100%;
+}
+
+.json-viewer-codemirror .cm-scroller::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.json-viewer-codemirror .cm-scroller::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.json-viewer-codemirror .cm-scroller::-webkit-scrollbar-thumb {
+  background-color: var(--border-color);
+  border-radius: 4px;
+  border: 1px solid transparent;
+}
+
+.json-viewer-codemirror .cm-scroller::-webkit-scrollbar-thumb:hover {
+  background-color: var(--text-muted);
+}
+
+.json-viewer-codemirror .cm-scroller::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+.json-viewer-codemirror .cm-gutter {
+  background-color: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
+}
+
+.json-viewer-codemirror .cm-gutters {
+  background-color: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
+}
+
+.json-viewer-codemirror .cm-lineNumbers .cm-gutterElement {
+  color: var(--text-muted);
+  padding: 0 6px;
+}
+
+.json-viewer-codemirror .cm-foldGutter .cm-gutterElement {
+  color: var(--text-muted);
+  padding: 0 4px;
+}
+
+.json-viewer-codemirror .cm-foldGutter .cm-gutterElement:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* 紧凑的 JSON 查看器（用于详情面板）*/
+.json-viewer.compact .json-viewer-controls {
+  padding: 6px 8px;
+}
+
+.json-viewer.compact .json-viewer-wrap-control {
+  font-size: 10px;
+}
+
+.json-viewer.compact .json-viewer-copy-btn {
+  font-size: 10px;
+  padding: 2px 6px;
+}
+
+.json-viewer.compact .json-viewer-codemirror .cm-content {
+  padding: 6px 8px;
+  font-size: 12px;
+}
+
+.json-viewer.compact .json-viewer-codemirror .cm-scroller {
+  font-size: 10px;
+}
+
+/* 确保 CodeMirror 在小高度时也能正常滚动 */
+.json-viewer-container {
+  min-height: 100px;
+}
+
+.json-viewer-codemirror .cm-editor.cm-focused {
+  outline: none;
+}
+
+/* 在没有足够空间时强制显示滚动条 */
+.json-viewer-codemirror .cm-scroller {
+  min-height: 100%;
+}
+
+/* Simulate 编辑器专用样式 */
+.json-viewer.simulate-editor {
+  height: 100%;
+  min-height: 200px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.json-viewer.simulate-editor .json-viewer-container {
+  flex: 1;
+  min-height: 0;
+}
+
+.json-viewer.simulate-editor .json-viewer-codemirror {
+  height: 100%;
+}
+
+.json-viewer.simulate-editor .json-viewer-codemirror .cm-editor {
+  height: 100%;
+  min-height: 150px;
+}
+
+.json-viewer.simulate-editor .json-viewer-codemirror .cm-scroller {
+  height: 100%;
+  min-height: 150px;
+  overflow-y: auto;
+}
+
+/* 为嵌套解析的 JSON 内容添加特殊样式 */
+.json-viewer-codemirror .cm-content[data-nested="true"] {
+  border-left: 3px solid var(--accent-color);
+  padding-left: 12px;
+}
+
+/* 确保文本选择样式与主题一致 */
+.json-viewer-codemirror .cm-selectionBackground {
+  background-color: rgba(0, 122, 204, 0.3) !important;
+}
+
+.json-viewer-codemirror .cm-focused .cm-selectionBackground {
+  background-color: rgba(0, 122, 204, 0.4) !important;
+}
+
+/* 修复高度计算问题 */
+.json-viewer-codemirror .cm-editor.cm-focused .cm-scroller {
+  outline: none;
+}
+
+/* 为搜索功能添加样式 */
+.json-viewer-codemirror .cm-searchMatch {
+  background-color: rgba(255, 193, 7, 0.3);
+  border: 1px solid rgba(255, 193, 7, 0.6);
+}
+
+.json-viewer-codemirror .cm-searchMatch-selected {
+  background-color: rgba(255, 193, 7, 0.6);
+  border: 1px solid rgba(255, 193, 7, 0.9);
+} 

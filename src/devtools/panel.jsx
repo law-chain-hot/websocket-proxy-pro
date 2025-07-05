@@ -4,35 +4,91 @@ import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import ControlPanel from "../components/ControlPanel.jsx";
 import WebSocketList from "../components/WebSocketList.jsx";
 import MessageDetails from "../components/MessageDetails.jsx";
-import SimulateMessagePanel from "../components/SimulateMessagePanel.jsx";
-import "../styles/panel.css";
+import FloatingSimulate from "../components/FloatingSimulate.jsx";
+import "../styles/main.css";
 
 const WebSocketPanel = () => {
   const [isMonitoring, setIsMonitoring] = useState(true);
-  const [isPaused, setIsPaused] = useState(false);
-  const [connections, setConnections] = useState([]);
+  const [websocketEvents, setWebsocketEvents] = useState([]);
   const [selectedConnectionId, setSelectedConnectionId] = useState(null);
-
+  
+  // 分离连接管理和消息管理
+  const [connectionsMap, setConnectionsMap] = useState(new Map()); // 所有连接的基础信息（包括active和inactive）
+  
+  // 消息去重机制
+  const processedMessageIds = useRef(new Set());
+  
   useEffect(() => {
     // 监听来自 background script 的消息
     const messageListener = (message, sender, sendResponse) => {
-      console.log("🎯 Panel received message:", message);
+      console.log("🎯 Panel received message:", message, "MessageID:", message.messageId, Date.now());
 
       if (message.type === "websocket-event") {
         const eventData = message.data;
+        const messageId = message.messageId;
+        
+        // 基于messageId的去重机制
+        if (messageId && processedMessageIds.current.has(messageId)) {
+          console.log("🚫 Duplicate message detected by ID, skipping:", messageId);
+          sendResponse({ received: true, duplicate: true, messageId });
+          return;
+        }
+        
+        // 添加到已处理集合
+        if (messageId) {
+          processedMessageIds.current.add(messageId);
+          console.log("✅ Message ID added to processed set:", messageId);
+        }
+        
         console.log("📊 Processing WebSocket event:", eventData);
 
-        setConnections((prevConnections) => {
-          const newConnections = [...prevConnections, eventData];
-          console.log("📈 Total connections/events:", newConnections.length);
+        // 更新连接信息
+        setConnectionsMap((prevConnections) => {
+          const newConnections = new Map(prevConnections);
+          
+          if (eventData.type === "connection" || eventData.type === "open") {
+            // 创建或更新连接为active状态
+            newConnections.set(eventData.id, {
+              id: eventData.id,
+              url: eventData.url,
+              status: eventData.type === "connection" ? "connecting" : "open",
+              timestamp: eventData.timestamp,
+              lastActivity: eventData.timestamp,
+            });
+            console.log("📊 Created/Updated connection:", eventData.id, "Status:", eventData.type);
+          } else if (eventData.type === "close" || eventData.type === "error") {
+            // 更新连接为inactive状态，如果连接不存在则创建它
+            const existing = newConnections.get(eventData.id);
+            newConnections.set(eventData.id, {
+              id: eventData.id,
+              url: existing?.url || eventData.url || "Unknown URL",
+              status: eventData.type, // "close" 或 "error"
+              timestamp: existing?.timestamp || eventData.timestamp,
+              lastActivity: eventData.timestamp,
+            });
+            console.log("📊 Updated connection to inactive:", eventData.id, "Status:", eventData.type);
+          } else if (eventData.type === "message") {
+            // 更新最后活动时间（对于消息事件）
+            const existing = newConnections.get(eventData.id);
+            if (existing) {
+              newConnections.set(eventData.id, {
+                ...existing,
+                lastActivity: eventData.timestamp,
+              });
+            }
+          }
+          
           return newConnections;
         });
-      } else if (message.type === "proxy-state-change") {
-        console.log("🎛️ Proxy state changed:", message.data);
-        setIsPaused(message.data.state.isPaused);
+
+        setWebsocketEvents((prevEvents) => {
+          const newEvents = [...prevEvents, eventData];
+          console.log("📈 Total WebSocket events:", newEvents.length);
+          return newEvents;
+        });
       }
 
-      sendResponse({ received: true });
+      sendResponse({ received: true, messageId: message.messageId });
     };
 
     chrome.runtime.onMessage.addListener(messageListener);
@@ -62,7 +118,6 @@ const WebSocketPanel = () => {
   const handleStopMonitoring = () => {
     console.log("⏹️ Stopping WebSocket monitoring...");
     setIsMonitoring(false);
-    setIsPaused(false);
 
     // 发送停止监控消息到 background script
     chrome.runtime
@@ -77,58 +132,20 @@ const WebSocketPanel = () => {
       });
   };
 
-  const handlePauseConnections = () => {
-    console.log("⏸️ Pausing WebSocket connections...");
-    setIsPaused(true);
-
-    // 发送暂停连接消息到 background script
-    chrome.runtime
-      .sendMessage({
-        type: "pause-connections",
-      })
-      .then((response) => {
-        console.log("✅ Pause connections response:", response);
-      })
-      .catch((error) => {
-        console.error("❌ Failed to pause connections:", error);
-      });
-  };
-
-  const handleResumeConnections = () => {
-    console.log("▶️ Resuming WebSocket connections...");
-    setIsPaused(false);
-
-    // 发送恢复连接消息到 background script
-    chrome.runtime
-      .sendMessage({
-        type: "resume-connections",
-      })
-      .then((response) => {
-        console.log("✅ Resume connections response:", response);
-      })
-      .catch((error) => {
-        console.error("❌ Failed to resume connections:", error);
-      });
-  };
-
   const handleClearConnections = () => {
-    console.log("🗑️ Clearing all connections...");
-    setConnections([]);
+    console.log("🗑️ Clearing all WebSocket connections and events...");
+    setWebsocketEvents([]);
+    setConnectionsMap(new Map());
     setSelectedConnectionId(null);
   };
 
   const handleClearMessages = (connectionId) => {
-    console.log("🗑️ Clearing messages for connection:", connectionId);
-    setConnections((prevConnections) => {
-      // 移除该连接的所有消息事件，但保留连接事件和其他系统事件
-      return prevConnections.filter((conn) => {
-        // 如果不是目标连接，保留
-        if (conn.id !== connectionId) return true;
-
-        // 这里不再过滤消息类型，保留所有消息
-        return true; // 保留所有消息
-      });
+    console.log("🗑️ Clearing all messages and events for connection:", connectionId);
+    setWebsocketEvents((prevEvents) => {
+      // 移除目标连接的所有事件（消息和系统事件都清除）
+      return prevEvents.filter((event) => event.id !== connectionId);
     });
+    // 连接基础信息保留在connections Map中，所以连接仍会显示在列表中
   };
 
   const handleSelectConnection = (connectionId) => {
@@ -144,6 +161,7 @@ const WebSocketPanel = () => {
     console.log("🎭 Simulating message:", { connectionId, message, direction });
 
     try {
+      // 1. Send simulate message to background (for actual simulation execution)
       const response = await chrome.runtime.sendMessage({
         type: "simulate-message",
         data: {
@@ -153,7 +171,26 @@ const WebSocketPanel = () => {
         },
       });
 
-      console.log("✅ Simulate message response:", response);
+      // 2. Handle simulated message display directly within Panel
+      if (response && response.success) {
+        const connectionInfo = connectionsMap.get(connectionId);
+        const simulatedEvent = {
+          id: connectionId,
+          url: connectionInfo?.url || "Unknown",
+          type: "message",
+          data: message,
+          direction: direction,
+          timestamp: Date.now(),
+          status: connectionInfo?.status || "open",
+          simulated: true, // Mark as simulated message
+        };
+
+        // 直接添加到事件列表中
+        setWebsocketEvents((prevEvents) => [simulatedEvent, ...prevEvents]);
+        
+        console.log("✅ Simulated message added to panel locally");
+      }
+
       return response;
     } catch (error) {
       console.error("❌ Failed to simulate message:", error);
@@ -165,22 +202,18 @@ const WebSocketPanel = () => {
   const getSelectedConnectionData = () => {
     if (!selectedConnectionId) return null;
 
-    // 包含所有类型的事件
-    const connectionMessages = connections.filter(
-      (conn) => conn.id === selectedConnectionId
-    );
+    // 从connectionsMap获取连接基本信息
+    const connectionInfo = connectionsMap.get(selectedConnectionId);
+    if (!connectionInfo) return null;
 
-    // 获取连接基本信息
-    const firstConnection = connections.find(
-      (conn) => conn.id === selectedConnectionId
+    // 获取该连接的所有事件/消息
+    const connectionMessages = websocketEvents.filter(
+      (event) => event.id === selectedConnectionId
     );
-
-    // 即使没有消息也要返回连接对象，保持UI状态
-    if (!firstConnection) return null;
 
     return {
       id: selectedConnectionId,
-      url: firstConnection.url,
+      url: connectionInfo.url,
       messages: connectionMessages,
     };
   };
@@ -193,13 +226,7 @@ const WebSocketPanel = () => {
         <h1>🔌 WebSocket Monitor</h1>
         <div className="panel-status">
           {isMonitoring ? (
-            isPaused ? (
-              <span className="status paused">
-                ⏸️ Monitoring Active (Paused)
-              </span>
-            ) : (
-              <span className="status active">🟢 Monitoring Active</span>
-            )
+            <span className="status active">🟢 Monitoring Active</span>
           ) : (
             <span className="status inactive">🔴 Monitoring Stopped</span>
           )}
@@ -228,11 +255,8 @@ const WebSocketPanel = () => {
                 <div className="panel-body">
                   <ControlPanel
                     isMonitoring={isMonitoring}
-                    isPaused={isPaused}
                     onStartMonitoring={handleStartMonitoring}
                     onStopMonitoring={handleStopMonitoring}
-                    onPauseConnections={handlePauseConnections}
-                    onResumeConnections={handleResumeConnections}
                   />
                 </div>
               </div>
@@ -244,11 +268,11 @@ const WebSocketPanel = () => {
               <div className="panel-wrapper">
                 <div className="panel-title">
                   <h3>🔗 Websocket Connections</h3>
-                  {connections.length > 0 && (
+                  {connectionsMap.size > 0 && (
                     <button
                       className="panel-title-btn"
                       onClick={handleClearConnections}
-                      title="Clear all connection history"
+                      title="Clear all WebSocket connections and events"
                     >
                       🗑️ Clear All
                     </button>
@@ -256,7 +280,8 @@ const WebSocketPanel = () => {
                 </div>
                 <div className="panel-body">
                   <WebSocketList
-                    connections={connections}
+                    websocketEvents={websocketEvents}
+                    connectionsMap={connectionsMap}
                     selectedConnectionId={selectedConnectionId}
                     onSelectConnection={handleSelectConnection}
                     onClearConnections={handleClearConnections}
@@ -269,51 +294,28 @@ const WebSocketPanel = () => {
 
         <PanelResizeHandle className="panel-resize-handle vertical" />
 
-        {/* 右侧垂直布局：MessageDetails + SimulateMessage */}
+        {/* 右侧：MessageDetails */}
         <Panel className="panel-right-section">
-          <PanelGroup direction="vertical">
-            <Panel
-              defaultSize={70}
-              minSize={40}
-              className="message-details-container"
-            >
-              <div className="panel-wrapper">
-                <div className="panel-title">
-                  <h3>💬 Message Details</h3>
-                </div>
-                <div className="panel-body">
-                  <MessageDetails
-                    connection={selectedConnection}
-                    onSimulateMessage={handleSimulateMessage}
-                    onClearMessages={handleClearMessages}
-                  />
-                </div>
-              </div>
-            </Panel>
-
-            <PanelResizeHandle className="panel-resize-handle horizontal" />
-
-            <Panel
-              defaultSize={30}
-              minSize={7}
-              maxSize={60}
-              className="simulate-panel-container"
-            >
-              <div className="panel-wrapper">
-                <div className="panel-title">
-                  <h3>🎭 Simulate Message</h3>
-                </div>
-                <div className="panel-body">
-                  <SimulateMessagePanel
-                    connection={selectedConnection}
-                    onSimulateMessage={handleSimulateMessage}
-                  />
-                </div>
-              </div>
-            </Panel>
-          </PanelGroup>
+          <div className="panel-wrapper">
+            <div className="panel-title">
+              <h3>💬 Message Details</h3>
+            </div>
+            <div className="panel-body">
+              <MessageDetails
+                connection={selectedConnection}
+                onSimulateMessage={handleSimulateMessage}
+                onClearMessages={handleClearMessages}
+              />
+            </div>
+          </div>
         </Panel>
       </PanelGroup>
+
+      {/* 悬浮模拟消息窗口 */}
+      <FloatingSimulate
+        connection={selectedConnection}
+        onSimulateMessage={handleSimulateMessage}
+      />
     </div>
   );
 };

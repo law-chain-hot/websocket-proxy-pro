@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { filterConnections } from "../utils/filterUtils";
 
 const WebSocketList = ({
-  connections,
+  websocketEvents, // 所有WebSocket事件的数组
+  connectionsMap, // 所有连接的基础信息Map（包括active和inactive）
   selectedConnectionId,
   onSelectConnection,
   onClearConnections,
@@ -11,7 +12,7 @@ const WebSocketList = ({
   const [inactiveCollapsed, setInactiveCollapsed] = useState(true); // 非活跃连接折叠状态
   const [filterText, setFilterText] = useState(""); // 连接过滤文本
   const [filterInvert, setFilterInvert] = useState(false); // 反向过滤
-  if (!connections || connections.length === 0) {
+  if (!connectionsMap || connectionsMap.size === 0) {
     return (
       <div className="websocket-list-empty">
         <div className="empty-state">
@@ -54,12 +55,12 @@ const WebSocketList = ({
   };
 
   const getConnectionById = (connectionId) => {
-    return connections.find((conn) => conn.id === connectionId);
+    return websocketEvents.find((conn) => conn.id === connectionId);
   };
 
   // 获取每个连接的最新状态
   const getConnectionStatus = (connectionId) => {
-    const messages = connections
+    const messages = websocketEvents
       .filter((conn) => conn.id === connectionId)
       .sort((a, b) => b.timestamp - a.timestamp);
 
@@ -79,41 +80,36 @@ const WebSocketList = ({
       : "unknown";
   };
 
-  // 获取唯一的连接列表
-  const uniqueConnections = [];
-  const connectionIds = new Set();
+  // 使用connectionsMap构建连接列表
+  const uniqueConnections = Array.from(connectionsMap.values()).map((connInfo) => {
+    const messageCount = websocketEvents
+      .filter((event) => event.id === connInfo.id && event.type === "message")
+      .filter((msg, index, arr) =>
+        arr.findIndex(
+          (m) =>
+            m.timestamp === msg.timestamp &&
+            m.data === msg.data &&
+            m.direction === msg.direction
+        ) === index
+      ).length;
 
-  connections.forEach((conn) => {
-    if (!connectionIds.has(conn.id)) {
-      connectionIds.add(conn.id);
+    const lastActivity = Math.max(
+      connInfo.lastActivity,
+      ...websocketEvents
+        .filter((event) => event.id === connInfo.id)
+        .map((event) => event.timestamp)
+    );
 
-      // 优先查找该连接的"connection"类型事件作为代表
-      const connectionEvent = connections.find(
-        (c) => c.id === conn.id && c.type === "connection"
-      );
-
-      // 使用connection事件或当前事件作为基础
-      const baseConnection = connectionEvent || conn;
-
-      uniqueConnections.push({
-        ...baseConnection,
-        status: getConnectionStatus(conn.id),
-        messageCount: connections
-          .filter((c) => c.id === conn.id && c.type === "message")
-          .filter((msg, index, arr) =>
-            arr.findIndex(
-              (m) =>
-                m.timestamp === msg.timestamp &&
-                m.data === msg.data &&
-                m.direction === msg.direction
-            ) === index
-          ).length,
-        lastActivity: Math.max(
-          ...connections.filter((c) => c.id === conn.id).map((c) => c.timestamp)
-        ),
-      });
-    }
-  });
+          return {
+        id: connInfo.id,
+        url: connInfo.url,
+        type: "connection",
+        timestamp: connInfo.timestamp,
+        status: connInfo.status === "close" ? "closed" : connInfo.status, // 映射"close"为"closed"
+        messageCount,
+        lastActivity,
+      };
+    });
 
   // 分组连接：活跃和非活跃，按创建时间排序（新到旧）
   const filteredConnections = filterConnections(uniqueConnections, {

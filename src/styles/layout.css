@@ -1,0 +1,273 @@
+/* WebSocket面板容器 */
+.websocket-panel {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 面板头部 */
+.panel-header {
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.panel-header h1 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.panel-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 主要内容区域 */
+.panel-content {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  height: 100%;
+}
+
+.panel-left {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-right {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* React Resizable Panels 样式 */
+[data-panel-group] {
+  height: 100%;
+}
+
+[data-panel] {
+  overflow: hidden;
+}
+
+/* 分割线样式 */
+.panel-resize-handle {
+  background-color: var(--border-color);
+  width: 6px;
+  cursor: col-resize;
+  position: relative;
+  transition: background-color 0.2s;
+  flex-shrink: 0;
+}
+
+.panel-resize-handle:hover {
+  background-color: var(--accent-color);
+}
+
+.panel-resize-handle:active {
+  background-color: var(--accent-color);
+}
+
+/* 分割线中间的抓手样式 */
+.panel-resize-handle::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 2px;
+  height: 40px;
+  background-color: var(--text-muted);
+  opacity: 0.3;
+  transition: opacity 0.2s;
+  border-radius: 1px;
+}
+
+.panel-resize-handle:hover::after {
+  opacity: 0.8;
+  background-color: white;
+}
+
+/* 分割线拖拽时的视觉反馈 */
+.panel-resize-handle[data-resize-handle-state="drag"] {
+  background-color: var(--accent-color);
+}
+
+/* 面板容器样式 */
+.panel-left-section,
+.panel-right-section {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.control-panel-container,
+.websocket-list-container,
+.message-details-container,
+.simulate-panel-container {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--border-color);
+}
+
+/* 分割线方向样式 */
+.panel-resize-handle.horizontal {
+  height: 6px;
+  width: 100%;
+  cursor: row-resize;
+  background-color: var(--border-color);
+  position: relative;
+  transition: background-color 0.2s;
+  flex-shrink: 0;
+}
+
+.panel-resize-handle.vertical {
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+  background-color: var(--border-color);
+  position: relative;
+  transition: background-color 0.2s;
+  flex-shrink: 0;
+}
+
+.panel-resize-handle.horizontal:hover,
+.panel-resize-handle.vertical:hover {
+  background-color: var(--accent-color);
+}
+
+/* 水平分割线的抓手 */
+.panel-resize-handle.horizontal::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 2px;
+  background-color: var(--text-muted);
+  opacity: 0.3;
+  transition: opacity 0.2s;
+  border-radius: 1px;
+}
+
+.panel-resize-handle.horizontal:hover::after {
+  opacity: 0.8;
+  background-color: white;
+}
+
+/* 垂直分割线的抓手 */
+.panel-resize-handle.vertical::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 2px;
+  height: 40px;
+  background-color: var(--text-muted);
+  opacity: 0.3;
+  transition: opacity 0.2s;
+  border-radius: 1px;
+}
+
+.panel-resize-handle.vertical:hover::after {
+  opacity: 0.8;
+  background-color: white;
+}
+
+/* 确保面板在折叠时隐藏内容 */
+[data-panel][data-panel-size="0.0"] {
+  overflow: hidden;
+}
+
+[data-panel][data-panel-size="0.0"] .simulate-panel-content {
+  display: none;
+}
+
+/* Panel 包装器样式 */
+.panel-wrapper {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-primary);
+  overflow: hidden;
+}
+
+.panel-title {
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  padding: 6px 12px;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.panel-title h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.panel-title-btn {
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  border: 1px solid var(--danger-color);
+  border-radius: var(--radius);
+  background-color: var(--danger-color);
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.panel-title-btn:hover {
+  background-color: #bd2130;
+  border-color: #bd2130;
+  color: white;
+}
+
+.panel-title-btn:active {
+  transform: scale(0.98);
+}
+
+.panel-body {
+  flex: 1;
+  background-color: var(--bg-primary);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 响应式调整 */
+@media (max-width: 480px) {
+  .panel-header {
+    padding: 8px 12px;
+  }
+  
+  .panel-header h1 {
+    font-size: 16px;
+  }
+  
+  .panel-resize-handle {
+    width: 4px;
+  }
+  
+  .panel-resize-handle.horizontal {
+    height: 4px;
+  }
+} 

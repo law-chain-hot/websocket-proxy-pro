@@ -196,6 +196,256 @@ graph TB
    });
    ```
 
+3. **DevTools Panel 与 Background Script 通信**
+
+   - 使用 chrome.runtime.sendMessage 和 chrome.runtime.onMessage
+   - 原因：DevTools Panel 运行在独立的 DevTools 进程中
+   - 示例：
+
+   ```javascript
+   // DevTools Panel 发送消息
+   chrome.runtime.sendMessage({
+       type: 'start-monitoring'
+   }).then(response => {
+       console.log('Monitoring started:', response);
+   });
+
+   // DevTools Panel 接收消息
+   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+       if (message.type === 'websocket-event') {
+           // 处理 WebSocket 事件 - 使用去重机制
+           if (message.messageId && !processedMessageIds.current.has(message.messageId)) {
+               processedMessageIds.current.add(message.messageId);
+               setWebsocketEvents(prev => [...prev, message.data]);
+           }
+       }
+       sendResponse({ received: true });
+   });
+   ```
+
+4. **Content Script 与 DevTools Panel 通信**
+
+   - ✅ **双路径通信机制已启用**
+   - **路径1（主要）**：Content Script 直接发送给 Panel
+   - **路径2（兜底）**：Content Script → Background Script → Panel  
+   - 两个路径同时工作，通过 `messageId` 去重机制防止重复处理
+
+   ```javascript
+   // Content Script 发送带唯一ID的消息
+   const messageId = generateMessageId();
+   chrome.runtime.sendMessage({
+       type: "websocket-event",
+       data: eventData,
+       messageId: messageId,
+       source: "content-script"
+   });
+
+   // Panel 接收来自两个路径的消息，通过messageId去重
+   if (messageId && processedMessageIds.current.has(messageId)) {
+       console.log("🚫 Duplicate message detected, skipping");
+       return;
+   }
+   processedMessageIds.current.add(messageId);
+   ```
+
+5. **Background Script 与 DevTools Panel 通信**
+
+   - 使用 chrome.runtime.sendMessage 广播消息
+   - **当前状态**：已启用转发功能，作为兜底机制
+   - **双重保障**：确保消息一定能到达 Panel，配合去重机制避免重复
+
+   ```javascript
+   // Background Script 转发消息（已启用）
+   function forwardToDevTools(message) {
+       chrome.runtime.sendMessage(message).catch(error => {
+           console.log('Failed to forward message to DevTools Panel:', message.type);
+       });
+   }
+
+   // websocket-event 和 proxy-state-change 都会被转发
+   case "websocket-event":
+   case "proxy-state-change":
+       forwardToDevTools(message);
+       break;
+   ```
+
+6. **DevTools 页面间通信**
+
+   - DevTools 页面包括：devtools.html、devtools.js、panel.html、panel.jsx
+   - 使用 chrome.devtools API 进行通信
+   - 示例：
+
+   ```javascript
+   // devtools.js 创建面板
+   chrome.devtools.panels.create(
+       "WebSocket Monitor",
+       "src/devtools/panel.html",
+       "src/devtools/panel.html",
+       function(panel) {
+           // 面板创建完成
+       }
+   );
+   ```
+
+### 3.3.1 双路径通信机制
+
+我们实现了**双路径通信机制**，确保消息传递的可靠性：
+
+#### 设计理念
+
+1. **路径1（主要）**：Content Script 直接与 DevTools Panel 通信
+   - 优势：延迟低，效率高
+   - 风险：理论上不应该工作，可能在某些环境下失效
+
+2. **路径2（兜底）**：通过 Background Script 转发
+   - 优势：标准的扩展通信方式，可靠性高
+   - 成本：多一跳转发，延迟稍高
+
+#### 消息去重机制
+
+由于双路径同时工作，每条消息都会被发送两次。我们实现了基于 `messageId` 的去重机制：
+
+```javascript
+// 1. Content Script 生成唯一消息ID
+function generateMessageId() {
+  return `msg_${Date.now()}_${++messageIdCounter}_${Math.random().toString(36).substr(2, 9)}`;
+}
+
+// 2. 发送消息时添加ID
+const messageWithId = {
+  type: "websocket-event",
+  data: eventData,
+  messageId: messageId,
+  source: "content-script"
+};
+
+// 3. Panel 使用Set去重
+const processedMessageIds = useRef(new Set());
+
+if (messageId && processedMessageIds.current.has(messageId)) {
+  // 跳过重复消息
+  return;
+}
+processedMessageIds.current.add(messageId);
+```
+
+**需要去重的场景：**
+
+1. **WebSocket事件消息** (`websocket-event`) - ✅ 已实现去重
+   - **双路径来源**：
+     - 路径1：injected.js → content.js → Panel (直接)
+     - 路径2：injected.js → content.js → background.js → Panel (转发)
+   - 频率：高（每个WebSocket事件都会触发）
+   - 风险：100%重复（两个路径同时发送相同消息）
+
+2. **代理状态变化消息** (`proxy-state-change`) - ✅ 已实现去重
+   - **双路径来源**：
+     - 路径1：injected.js → content.js → Panel (直接)
+     - 路径2：injected.js → content.js → background.js → Panel (转发)
+   - 频率：中（用户操作触发）
+   - 风险：100%重复（两个路径同时发送相同消息）
+   - 实现：使用相同的messageId机制
+
+3. **控制命令** (`start-monitoring`, `pause-connections`等) - ✅ 不需要去重
+   - 来源：Panel → Background Script
+   - 频率：低（用户主动触发）
+   - 风险：低重复概率
+
+4. **消息模拟响应** (`simulate-message`) - ✅ 不需要去重
+   - 来源：Panel → Background Script → Content Script
+   - 频率：低（用户主动触发）
+   - 风险：低重复概率
+
+### 3.3.2 去重机制实现详解
+
+#### 消息ID生成算法
+
+```javascript
+// content.js中的唯一ID生成
+let messageIdCounter = 0;
+function generateMessageId() {
+  return `msg_${Date.now()}_${++messageIdCounter}_${Math.random().toString(36).substr(2, 9)}`;
+}
+```
+
+**ID组成部分：**
+- `msg_` - 前缀标识
+- `Date.now()` - 时间戳（毫秒）
+- `++messageIdCounter` - 自增计数器 
+- `Math.random().toString(36).substr(2, 9)` - 随机字符串
+
+这种组合确保了ID的唯一性，即使在高频消息场景下也不会冲突。
+
+#### 去重实现流程
+
+```mermaid
+sequenceDiagram
+    participant INJ as Injected Script
+    participant CS as Content Script  
+    participant PANEL as DevTools Panel
+
+    INJ->>CS: postMessage(event)
+    Note over CS: 生成 messageId
+    CS->>PANEL: chrome.runtime.sendMessage(事件 + messageId)
+    Note over PANEL: 检查 Set 中是否存在 messageId
+    alt messageId 已存在
+        Note over PANEL: 跳过处理，记录重复日志
+    else messageId 不存在
+        Note over PANEL: 添加到 Set，正常处理事件
+    end
+```
+
+#### 内存管理
+
+当前实现使用 `useRef(new Set())` 存储已处理的消息ID。由于：
+
+1. **用户要求简化代码** - 不实现复杂的内存清理机制
+2. **实际使用场景** - DevTools Panel 通常不会长时间保持打开
+3. **内存占用合理** - 每个ID约占用30-40字节，正常使用不会造成内存问题
+
+如果未来需要优化，可以考虑：
+```javascript
+// 可选的内存清理机制（当前未实现）
+const MAX_PROCESSED_IDS = 10000;
+if (processedMessageIds.current.size > MAX_PROCESSED_IDS) {
+  // 清理较老的ID或使用LRU策略
+}
+```
+
+#### 调试和监控
+
+去重机制包含详细的日志输出：
+
+```javascript
+// 成功处理的消息
+console.log("✅ Message ID added to processed set:", messageId);
+
+// 检测到重复的消息  
+console.log("🚫 Duplicate message detected by ID, skipping:", messageId);
+
+// 消息发送确认
+console.log("📤 Sending message with ID:", messageId, "Type:", messageType);
+```
+
+通过这些日志可以：
+- 监控去重机制的效果
+- 调试消息流问题
+- 分析重复消息的来源
+
+#### 双路径通信的优势
+
+1. **高可用性**：即使一个路径失效，另一个路径仍能保证通信
+2. **向后兼容**：支持不同Chrome版本和扩展环境的差异
+3. **性能优化**：主路径提供最佳性能，兜底路径确保可靠性
+4. **调试友好**：两个路径的日志帮助诊断通信问题
+
+```javascript
+// 实际效果：
+// - 正常情况下，两个路径都工作，去重机制确保只处理一次
+// - 异常情况下，至少有一个路径能保证消息到达
+// - 开发调试时，可以通过日志分析哪个路径更可靠
+```
+
 ### 3.4 安全性考虑
 
 1. **消息验证**
@@ -302,6 +552,19 @@ graph TB
             style BG fill:#f9f,stroke:#333
         end
 
+        subgraph "DevTools进程"
+            subgraph "DevTools环境"
+                DT[devtools.js]
+                DT_HTML[devtools.html]
+                PANEL[panel.jsx]
+                PANEL_HTML[panel.html]
+                style DT fill:#ff9,stroke:#333
+                style DT_HTML fill:#ff9,stroke:#333
+                style PANEL fill:#ff9,stroke:#333
+                style PANEL_HTML fill:#ff9,stroke:#333
+            end
+        end
+
         subgraph "渲染进程"
             subgraph "网页环境"
                 WS[WebSocket API]
@@ -321,10 +584,100 @@ graph TB
         INJ --"window.postMessage"--> CS
         CS --"chrome.runtime.sendMessage"--> BG
         BG --"chrome.tabs.sendMessage"--> CS
+        CS -->|"chrome.runtime.sendMessage (路径1-主要)"| PANEL
+        BG -->|"chrome.runtime.sendMessage (路径2-兜底)"| PANEL
+        PANEL --"chrome.runtime.sendMessage"--> BG
+        DT --"chrome.devtools.panels.create"--> PANEL_HTML
     end
 ```
 
-### 6.2 通信机制的类比
+### 6.2 当前通信架构总览（含去重机制）
+
+```mermaid
+graph TB
+    subgraph "消息去重机制"
+        subgraph "Content Script"
+            MSG_ID[生成 messageId]
+            MSG_SEND[发送带ID的消息]
+        end
+        
+        subgraph "DevTools Panel"
+            ID_CHECK{检查 messageId}
+            ID_SET[已处理ID集合]
+            PROCESS[处理消息]
+            SKIP[跳过重复消息]
+        end
+        
+        MSG_ID --> MSG_SEND
+        MSG_SEND --> ID_CHECK
+        ID_CHECK -->|ID已存在| SKIP
+        ID_CHECK -->|ID不存在| ID_SET
+        ID_SET --> PROCESS
+    end
+
+    subgraph "双路径通信机制"
+        INJ[Injected Script] 
+        CS[Content Script]
+        BG[Background Script]
+        PANEL[DevTools Panel]
+        
+        INJ -->|postMessage| CS
+        CS -->|chrome.runtime.sendMessage<br/>🚀 路径1-主要| PANEL
+        CS -->|chrome.runtime.sendMessage<br/>📊 数据存储| BG
+        BG -->|chrome.runtime.sendMessage<br/>🛡️ 路径2-兜底| PANEL
+        PANEL -->|chrome.runtime.sendMessage| BG
+    end
+```
+
+### 6.3 完整的通信时序图
+
+```mermaid
+sequenceDiagram
+    participant DT as DevTools Panel
+    participant BG as Background Script
+    participant CS as Content Script
+    participant INJ as Injected Script
+    participant WS as WebSocket API
+
+    Note over DT: 用户打开 DevTools Panel
+    DT->>BG: start-monitoring
+    BG->>CS: 通知开始监控
+    CS->>INJ: 注入 WebSocket 代理
+    INJ->>WS: 替换原始 WebSocket
+
+    Note over WS: WebSocket 连接建立
+    WS->>INJ: 连接事件
+    INJ->>CS: postMessage(websocket-event)
+    CS->>BG: chrome.runtime.sendMessage (数据存储 + 触发转发)
+    CS->>DT: chrome.runtime.sendMessage (路径1-直接通信)
+    BG->>DT: chrome.runtime.sendMessage (路径2-兜底转发)
+    Note over DT: messageId去重机制：只处理一次
+    DT->>BG: 确认接收
+
+    Note over WS: WebSocket 消息发送
+    WS->>INJ: send() 调用
+    INJ->>CS: postMessage(websocket-event)
+    CS->>BG: chrome.runtime.sendMessage (数据存储 + 触发转发)
+    CS->>DT: chrome.runtime.sendMessage (路径1-直接通信)
+    BG->>DT: chrome.runtime.sendMessage (路径2-兜底转发)
+    Note over DT: messageId去重机制：只处理一次
+
+    Note over WS: WebSocket 消息接收
+    WS->>INJ: message 事件
+    INJ->>CS: postMessage(websocket-event)
+    CS->>BG: chrome.runtime.sendMessage (数据存储 + 触发转发)
+    CS->>DT: chrome.runtime.sendMessage (路径1-直接通信)
+    BG->>DT: chrome.runtime.sendMessage (路径2-兜底转发)
+    Note over DT: messageId去重机制：只处理一次
+
+    Note over DT: 用户操作控制
+    DT->>BG: pause-connections
+    BG->>CS: 通知暂停连接
+    CS->>INJ: postMessage(pause-connections)
+    INJ->>WS: 暂停消息处理
+```
+
+### 6.3 通信机制的类比
 
 想象一个大型办公楼的安全通信系统：
 
@@ -339,7 +692,69 @@ graph TB
    - 需要通过前台登记和验证（Chrome 扩展的权限系统）
    - 通信有一定延迟，但更安全可靠
 
-### 6.3 WebSocket 代理能力
+3. **监控中心与各楼层** (DevTools Panel 与 Background Script)
+   - 使用 chrome.runtime.sendMessage，像是监控中心与各楼层的通信
+   - DevTools Panel 作为监控中心，可以查看和控制所有楼层的活动
+   - 实时接收来自各楼层的状态报告和事件通知
+
+### 6.4 DevTools Panel 通信机制详解
+
+DevTools Panel 是扩展的用户界面，运行在独立的 DevTools 进程中，具有特殊的通信机制：
+
+#### 6.4.1 DevTools Panel 生命周期
+
+```mermaid
+graph TD
+    A[用户打开 DevTools] --> B[加载 devtools.html]
+    B --> C[执行 devtools.js]
+    C --> D[创建面板]
+    D --> E[加载 panel.html]
+    E --> F[执行 panel.jsx]
+    F --> G[注册消息监听器]
+    G --> H[开始监控 WebSocket]
+    H --> I[接收实时事件]
+    I --> J[用户关闭 DevTools]
+    J --> K[清理资源]
+```
+
+#### 6.4.2 DevTools Panel 消息类型
+
+| 消息类型 | 方向 | 用途 | 示例 |
+|---------|------|------|------|
+| `start-monitoring` | Panel → Background | 开始监控 WebSocket | 用户点击开始按钮 |
+| `stop-monitoring` | Panel → Background | 停止监控 | 用户点击停止按钮 |
+| `pause-connections` | Panel → Background | 暂停连接 | 用户点击暂停按钮 |
+| `resume-connections` | Panel → Background | 恢复连接 | 用户点击恢复按钮 |
+| `simulate-message` | Panel → Background | 模拟消息 | 用户发送测试消息 |
+| `websocket-event` | Background → Panel | WebSocket 事件 | 实时事件通知 |
+| `proxy-state-change` | Background → Panel | 代理状态变化 | 状态更新通知 |
+
+#### 6.4.3 DevTools Panel 状态管理
+
+```javascript
+// Panel 组件状态
+const [isMonitoring, setIsMonitoring] = useState(true);
+const [isPaused, setIsPaused] = useState(false);
+const [websocketEvents, setWebsocketEvents] = useState([]);
+const [selectedConnectionId, setSelectedConnectionId] = useState(null);
+
+// 状态同步机制
+useEffect(() => {
+    const messageListener = (message, sender, sendResponse) => {
+        if (message.type === "websocket-event") {
+            setWebsocketEvents(prev => [...prev, message.data]);
+        } else if (message.type === "proxy-state-change") {
+            setIsPaused(message.data.state.isPaused);
+        }
+        sendResponse({ received: true });
+    };
+
+    chrome.runtime.onMessage.addListener(messageListener);
+    return () => chrome.runtime.onMessage.removeListener(messageListener);
+}, []);
+```
+
+### 6.5 WebSocket 代理能力
 
 这个扩展的代理能力确实类似于"中间人"模式，但是是一个"善意的中间人"。就像一个可信的邮件分拣中心：
 

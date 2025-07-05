@@ -1,6 +1,12 @@
 // Content script - 桥接页面和 background script
 console.log("🌉 WebSocket Proxy content script loaded");
 
+// 消息去重机制
+let messageIdCounter = 0;
+function generateMessageId() {
+  return `msg_${Date.now()}_${++messageIdCounter}_${Math.random().toString(36).substr(2, 9)}`;
+}
+
 // 使用外部文件注入，避免 CSP 内联脚本限制
 function injectWebSocketProxy() {
   console.log("💉 Injecting WebSocket proxy from external file...");
@@ -43,19 +49,29 @@ window.addEventListener("message", (event) => {
       event.data
     );
 
+    // 给消息添加唯一ID，用于去重
+    const messageId = generateMessageId();
+    const messageWithId = {
+      type: "websocket-event",
+      data: event.data.payload,
+      messageId: messageId,
+      timestamp: Date.now(),
+      source: "content-script"
+    };
+
+    console.log("📤 Sending message with ID:", messageId);
+
+    // 直接发送到 DevTools Panel，同时也发送到 Background Script 用于数据存储
     chrome.runtime
-      .sendMessage({
-        type: "websocket-event",
-        data: event.data.payload,
-      })
+      .sendMessage(messageWithId)
       .then((response) => {
         console.log(
-          "✅ Message sent to background script, response:",
+          "✅ Message sent to extension, response:",
           response
         );
       })
       .catch((error) => {
-        console.error("❌ Failed to send message to background script:", error);
+        console.error("❌ Failed to send message to extension:", error);
       });
   }
 });
@@ -66,34 +82,23 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   // 转发控制命令到注入脚本
   switch (message.type) {
+    case "start-monitoring":
+      console.log("🚀 Forwarding start monitoring to injected script");
+      window.postMessage(
+        {
+          source: "websocket-proxy-content",
+          type: "start-monitoring",
+        },
+        "*"
+      );
+      break;
+
     case "stop-monitoring":
       console.log("⏹️ Forwarding stop monitoring to injected script");
       window.postMessage(
         {
           source: "websocket-proxy-content",
           type: "stop-monitoring",
-        },
-        "*"
-      );
-      break;
-
-    case "pause-connections":
-      console.log("⏸️ Forwarding pause connections to injected script");
-      window.postMessage(
-        {
-          source: "websocket-proxy-content",
-          type: "pause-connections",
-        },
-        "*"
-      );
-      break;
-
-    case "resume-connections":
-      console.log("▶️ Forwarding resume connections to injected script");
-      window.postMessage(
-        {
-          source: "websocket-proxy-content",
-          type: "resume-connections",
         },
         "*"
       );

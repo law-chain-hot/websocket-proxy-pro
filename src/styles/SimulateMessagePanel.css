@@ -1,0 +1,609 @@
+/* 模拟消息面板样式 - 仅浮动模式 */
+
+.simulate-controls {
+  flex-shrink: 0;
+}
+
+.direction-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.direction-control label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  min-width: 60px;
+}
+
+.direction-control select {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 12px;
+}
+
+.direction-control select:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.2);
+}
+
+.simulate-input-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.simulate-input-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  flex-shrink: 0;
+}
+
+.simulate-input-header span {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.simulate-input-editor {
+  flex: 1;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+}
+
+.simulate-textarea {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: "Courier New", monospace;
+  resize: none;
+  min-height: 100px;
+  outline: none;
+}
+
+.simulate-textarea:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.2);
+}
+
+.simulate-actions {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.simulate-buttons {
+  margin-left: auto;
+}
+
+.simulate-btn {
+  flex: 1;
+  padding: 8px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background-color: var(--accent-color);
+  color: white;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.simulate-btn:hover:not(:disabled) {
+  background-color: #005a9e;
+  border-color: #005a9e;
+}
+
+.simulate-btn:disabled {
+  background-color: var(--bg-tertiary);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  border-color: var(--border-color);
+}
+
+.simulate-btn.incoming {
+  background-color: var(--danger-color);
+  border-color: var(--danger-color);
+}
+
+.simulate-btn.incoming:hover:not(:disabled) {
+  background-color: #bd2130;
+  border-color: #bd2130;
+}
+
+.simulate-btn.outgoing {
+  background-color: var(--success-color);
+  border-color: var(--success-color);
+}
+
+.simulate-btn.outgoing:hover:not(:disabled) {
+  background-color: #1e7e34;
+  border-color: #1e7e34;
+}
+
+.clear-btn {
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.clear-btn:hover:not(:disabled) {
+  background-color: var(--bg-tertiary);
+  border-color: var(--accent-color);
+}
+
+.clear-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.simulate-hint {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 6px;
+  background-color: var(--bg-tertiary);
+  border-radius: var(--radius);
+  border: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.simulate-panel-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  background-color: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+}
+
+.simulate-panel-empty p {
+  color: var(--text-muted);
+  font-style: italic;
+  margin: 0;
+}
+
+/* 模拟消息面板适配 */
+.simulate-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  gap: 12px;
+}
+
+.simulate-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.direction-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.direction-control label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.direction-control select {
+  font-size: 12px;
+  padding: 4px 8px;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.direction-control select:focus {
+  outline: none;
+  border-color: var(--accent-color);
+}
+
+
+
+.simulate-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.simulate-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.connection-info {
+  font-size: 11px;
+  color: var(--text-muted);
+  background-color: var(--bg-tertiary);
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-family: "Courier New", monospace;
+}
+
+.simulate-btn {
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.simulate-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.simulate-btn.incoming {
+  background-color: var(--success-color);
+  color: white;
+}
+
+.simulate-btn.incoming:hover:not(:disabled) {
+  background-color: #1e7e34;
+}
+
+.simulate-btn.outgoing {
+  background-color: var(--accent-color);
+  color: white;
+}
+
+.simulate-btn.outgoing:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+/* System Window Styles - Added for react-rnd integration */
+
+/* Floating simulate button */
+.floating-simulate-button {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, var(--accent-color), #0088cc);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1000;
+  user-select: none;
+  border: none;
+}
+
+.floating-simulate-button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.floating-simulate-button:active {
+  transform: scale(0.95);
+}
+
+.floating-simulate-button.open {
+  background: linear-gradient(135deg, #ffc107, #ffab00);
+}
+
+.floating-simulate-button.open:hover {
+  background: linear-gradient(135deg, #ffab00, #ff8f00);
+}
+
+.simulate-icon {
+  font-size: 24px;
+  color: white;
+  transition: transform 0.2s ease;
+}
+
+.floating-simulate-button:hover .simulate-icon {
+  transform: scale(1.1);
+}
+
+.simulate-tooltip {
+  position: absolute;
+  right: 70px;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.floating-simulate-button:hover .simulate-tooltip {
+  opacity: 1;
+}
+
+/* Draggable window container */
+.simulate-floating-window {
+  position: fixed;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  background-color: var(--bg-primary);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.simulate-window-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Window header - draggable area */
+.simulate-window-header {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: move;
+  user-select: none;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.simulate-window-header:hover {
+  /* background: linear-gradient(135deg, var(--accent-color), #0088cc); */
+  color: white;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.simulate-window-header.pinned {
+  /* background: linear-gradient(135deg, #28a745, #20c997); */
+  color: white;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.simulate-window-header.pinned:hover {
+  /* background: linear-gradient(135deg, #1e7e34, #1aa179); */
+}
+
+.simulate-window-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  flex: 1;
+  min-width: 0;
+  transition: color 0.3s ease;
+}
+
+.simulate-window-header.pinned .simulate-window-title::after {
+  content: '📌';
+  margin-left: 4px;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.simulate-window-header::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 30%;
+  transform: translate(-50%, -50%);
+  width: 30px;
+  height: 4px;
+  background: currentColor;
+  border-radius: 2px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.simulate-window-header:hover::before {
+  opacity: 0.3;
+}
+
+.simulate-icon-small {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.connection-indicator {
+  font-size: 11px;
+  opacity: 0.8;
+  margin-left: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+/* Window control buttons */
+.simulate-window-controls {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.window-control-btn {
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 4px;
+  background: rgba(128, 128, 128, 0.2);
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+
+.window-control-btn:hover {
+  background: rgba(128, 128, 128, 0.3);
+  color: var(--text-primary);
+}
+
+.simulate-window-header:hover .window-control-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.simulate-window-header:hover .window-control-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.window-control-btn.pin {
+  font-size: 14px;
+}
+
+.window-control-btn.pin.active {
+  background: rgba(40, 167, 69, 0.8);
+  color: white;
+}
+
+.window-control-btn.pin.active:hover {
+  background: rgba(40, 167, 69, 1);
+}
+
+.simulate-window-header:hover .window-control-btn.pin.active {
+  background: rgba(40, 167, 69, 0.9);
+}
+
+.simulate-window-header:hover .window-control-btn.pin.active:hover {
+  background: rgba(40, 167, 69, 1);
+}
+
+.window-control-btn.minimize:hover {
+  background: #ffc107;
+  color: #000;
+}
+
+.simulate-window-header:hover .window-control-btn.minimize:hover {
+  background: #ffc107;
+  color: #000;
+}
+
+/* Window content */
+.simulate-window-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: var(--bg-primary);
+}
+
+.simulate-window-content .simulate-content {
+  height: 100%;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: hidden;
+}
+
+.simulate-window-content .simulate-input-container {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.simulate-window-content .simulate-input-editor {
+  flex: 1;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+}
+
+.simulate-window-content .simulate-panel-empty {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  margin: 16px;
+  border: 2px dashed var(--border-color);
+  color: var(--text-secondary);
+}
+
+.simulate-window-content .simulate-panel-empty.floating {
+  background: var(--bg-secondary);
+  border: 2px dashed var(--border-color);
+}
+
+.simulate-window-content .simulate-panel-empty p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* Responsive adjustments for smaller windows */
+@media (max-width: 480px) {
+  .simulate-floating-window {
+    min-width: 300px;
+  }
+  
+  .connection-indicator {
+    display: none;
+  }
+  
+  .simulate-window-title {
+    font-size: 12px;
+  }
+  
+  .floating-simulate-button {
+    width: 50px;
+    height: 50px;
+    bottom: 16px;
+    right: 16px;
+  }
+  
+  .simulate-icon {
+    font-size: 20px;
+  }
+} 

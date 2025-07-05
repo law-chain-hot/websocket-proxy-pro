@@ -1,0 +1,849 @@
+/* 消息详情样式 */
+.message-details {
+  height: 100%;
+  background-color: transparent;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.details-header {
+  background-color: var(--bg-primary);
+  border-bottom: 1px solid var(--border-color);
+  padding: 8px 12px;
+  flex-shrink: 0;
+}
+
+.details-header h3 {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--text-primary);
+}
+
+.connection-details {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.control-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.filter-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 0;
+  position: relative;
+}
+
+.filter-controls.primary-filter {
+  margin-right: 8px;
+}
+
+.filter-controls.search-filter {
+  flex: 1;
+  max-width: 400px;
+  margin-right: 12px;
+}
+
+.secondary-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+
+.filter-controls label {
+  font-size: 10px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  min-width: fit-content;
+}
+
+.filter-controls select,
+.filter-controls input {
+  padding: 3px 6px;
+  border: 1px solid var(--border-color);
+  border-radius: 2px;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 11px;
+  outline: none;
+  height: 20px;
+  box-sizing: border-box;
+}
+
+.filter-controls.primary-filter select {
+  min-width: 80px;
+  font-weight: 500;
+}
+
+.filter-controls.direction-filter select,
+.filter-controls.view-filter select {
+  min-width: 60px;
+}
+
+.filter-controls select:focus,
+.filter-controls input:focus {
+  border-color: var(--accent-color);
+}
+
+.filter-controls.search-filter input:focus {
+  border-color: var(--accent-color);
+}
+
+.invert-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 11px;
+  color: var(--text-secondary);
+  user-select: none;
+  height: 20px;
+}
+
+.invert-checkbox input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.invert-checkbox .checkmark {
+  position: relative;
+  height: 12px;
+  width: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 2px;
+  background-color: var(--bg-primary);
+  transition: all 0.2s;
+}
+
+.invert-checkbox:hover .checkmark {
+  border-color: var(--accent-color);
+}
+
+.invert-checkbox input:checked ~ .checkmark {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+}
+
+.invert-checkbox .checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+  left: 3px;
+  top: 1px;
+  width: 4px;
+  height: 7px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.invert-checkbox input:checked ~ .checkmark:after {
+  display: block;
+}
+
+.invert-checkbox .checkbox-label {
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
+.filter-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.filter-icon {
+  position: absolute;
+  left: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 12px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.filter-controls.search-filter input {
+  width: 100%;
+  padding: 3px 24px 3px 24px !important;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 2px;
+  color: var(--text-primary);
+  font-size: 11px;
+  outline: none;
+  height: 20px;
+  box-sizing: border-box;
+}
+
+.filter-controls.search-filter input::placeholder {
+  color: var(--text-muted);
+}
+
+.clear-filter-btn {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 2px 4px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 10px;
+  transition: all 0.2s;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.clear-filter-btn:hover {
+  color: var(--danger-color);
+}
+
+.clear-messages-btn {
+  padding: 2px 6px;
+  border: 1px solid var(--border-color);
+  border-radius: 2px;
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 11px;
+  transition: all 0.2s;
+  white-space: nowrap;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.clear-messages-btn:hover:not(:disabled) {
+  background-color: var(--danger-color);
+  color: white;
+  border-color: var(--danger-color);
+}
+
+.clear-messages-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 原生表格样式 */
+.messages-table-container {
+  flex: 1;
+  overflow-y: auto;
+  background-color: var(--bg-primary);
+  height: 100%;
+}
+
+.ws-messages-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  font-size: 11px;
+  background-color: var(--bg-primary);
+  table-layout: fixed;
+}
+
+.ws-messages-table thead {
+  position: sticky;
+  top: 0;
+  background-color: var(--bg-secondary);
+  z-index: 1;
+}
+
+.ws-messages-table th.col-data {
+  width: auto;
+}
+
+.ws-messages-table th.col-length {
+  width: 60px;
+  text-align: right;
+}
+
+.ws-messages-table th.col-time {
+  width: 110px;
+  text-align: right;
+  user-select: none;
+}
+
+.ws-messages-table th.col-time:hover {
+  color: var(--accent-color);
+}
+
+.ws-messages-table td {
+  padding: 2px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+  vertical-align: middle;
+  height: 24px;
+  font-size: 12px;
+}
+
+.ws-messages-table td:last-child {
+  border-right: none;
+}
+
+.ws-messages-table th {
+  padding: 4px 8px;
+  text-align: left;
+  font-weight: 500;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-color);
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+  background-color: var(--bg-secondary);
+  font-size: 11px;
+  height: 24px;
+}
+
+.ws-messages-table th:last-child {
+  border-right: none;
+}
+
+.ws-messages-table td.col-length {
+  text-align: right;
+  color: var(--text-secondary);
+}
+
+.ws-messages-table td.col-time {
+  text-align: right;
+  color: var(--text-secondary);
+}
+
+.message-row {
+  cursor: pointer;
+  transition: background-color 0.1s;
+}
+
+.message-row:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.message-row.selected {
+  background-color: var(--accent-color) !important;
+  color: white;
+}
+
+.message-row.selected .data-cell,
+.message-row.selected .col-length,
+.message-row.selected .col-time {
+  color: white;
+}
+
+.message-row.outgoing {
+  border-right: 3px solid var(--success-color);
+}
+
+.message-row.incoming {
+  border-right: 3px solid var(--danger-color);
+}
+
+.message-row.system {
+  border-right: 3px solid var(--accent-color);
+}
+
+.message-row.simulated {
+  background-color: rgba(255, 193, 7, 0.2);
+}
+
+.message-row.blocked {
+  background-color: rgba(220, 53, 69, 0.2);
+}
+
+.data-cell {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow: hidden;
+  color: var(--text-primary);
+  height: 100%;
+}
+
+.data-cell.system {
+  color: var(--accent-color);
+}
+
+.direction-arrow {
+  font-size: 12px;
+  font-weight: bold;
+  width: 12px;
+  text-align: center;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.direction-arrow.outgoing {
+  color: var(--success-color);
+}
+
+.direction-arrow.incoming {
+  color: var(--danger-color);
+}
+
+.system-icon {
+  color: var(--accent-color);
+  font-size: 12px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.system-text {
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.message-tags {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  margin-right: 4px;
+}
+
+.message-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.message-tag.simulated {
+  background-color: #ffc107;
+  color: #000;
+}
+
+.message-tag.blocked {
+  background-color: var(--danger-color);
+  color: white;
+}
+
+.message-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  color: var(--text-primary);
+}
+
+/* 简洁详情面板 */
+.message-detail-simple {
+  background-color: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-content {
+  flex: 1;
+  overflow: hidden;
+}
+
+.detail-body {
+  padding: 8px 12px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.detail-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.detail-actions .copy-btn {
+  padding: 2px 6px;
+  font-size: 10px;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 3px;
+  transition: all 0.2s;
+}
+
+.detail-actions .copy-btn:hover {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.detail-actions .copy-btn.copied {
+  background-color: var(--success-color);
+  color: white;
+}
+
+.detail-text {
+  flex: 1;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  padding: 8px;
+  color: var(--text-primary);
+  font-size: 11px;
+  line-height: 1.3;
+  overflow: auto;
+  margin: 0;
+}
+
+.intercept-actions {
+  display: flex;
+  gap: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border-color);
+}
+
+.intercept-actions .action-btn {
+  padding: 2px 6px;
+  font-size: 10px;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 3px;
+  transition: all 0.2s;
+}
+
+.intercept-actions .action-btn:hover {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+/* 消息容器 */
+.messages-container {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.messages-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.message-item {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  margin-bottom: 8px;
+  padding: 12px;
+}
+
+.message-item.outgoing {
+  border-left: 3px solid var(--success-color);
+}
+
+.message-item.incoming {
+  border-left: 3px solid var(--danger-color);
+}
+
+.message-item.system {
+  border-left: 3px solid var(--accent-color);
+}
+
+.message-item.blocked {
+  border-left: 3px solid var(--danger-color);
+  background-color: rgba(220, 53, 69, 0.1);
+}
+
+.message-header {
+  font-size: 12px;
+}
+
+.message-header:not(.clickable) {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.direction-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.direction-badge.outgoing {
+  background-color: rgba(40, 167, 69, 0.2);
+  color: var(--success-color);
+}
+
+.direction-badge.incoming {
+  background-color: rgba(220, 53, 69, 0.2);
+  color: var(--danger-color);
+}
+
+.direction-badge.system {
+  background-color: rgba(0, 122, 204, 0.2);
+  color: var(--accent-color);
+}
+
+.direction-badge.blocked {
+  background-color: rgba(220, 53, 69, 0.2);
+  color: var(--danger-color);
+}
+
+.timestamp {
+  color: var(--text-muted);
+  font-family: "Courier New", monospace;
+}
+
+.message-type {
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.message-content {
+  margin-top: 8px;
+}
+
+.message-content pre {
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 8px;
+  font-size: 11px;
+  line-height: 1.4;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.message-content-wrapper {
+  position: relative;
+  margin-top: 8px;
+}
+
+.message-actions-top {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 10;
+}
+
+.message-actions {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+/* 选中消息的通用样式(适用于system等其他类型) */
+.message-item.selected:not(.outgoing):not(.incoming) {
+  background: linear-gradient(
+    135deg,
+    rgba(0, 122, 204, 0.25) 0%,
+    rgba(0, 122, 204, 0.15) 50%,
+    rgba(0, 122, 204, 0.08) 100%
+  );
+  border-left: 4px solid var(--accent-color);
+  border-right: 2px solid rgba(0, 122, 204, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 122, 204, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 0 0 1px rgba(0, 122, 204, 0.2);
+  transform: translateX(2px);
+  position: relative;
+}
+
+.message-item.selected:not(.outgoing):not(.incoming)::before {
+  content: "";
+  position: absolute;
+  left: -4px;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, #007acc 0%, #005a9e 100%);
+  border-radius: 0 2px 2px 0;
+}
+
+/* 模拟消息的特殊样式 */
+.message-item.simulated {
+  border-left: 3px solid #ffc107;
+  background-color: rgba(255, 193, 7, 0.05);
+}
+
+.message-item.simulated.selected {
+  background-color: rgba(255, 193, 7, 0.15);
+  border-left: 3px solid #ffc107;
+  box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
+}
+
+.message-item.simulated .message-header {
+  position: relative;
+}
+
+.message-item.simulated .message-header::after {
+  content: "🎭 SIMULATED";
+  position: absolute;
+  right: 0;
+  top: 0;
+  font-size: 9px;
+  background-color: #ffc107;
+  color: #212529;
+  padding: 2px 6px;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+/* 消息折叠样式 */
+.message-item.collapsed {
+  padding: 8px 12px;
+}
+
+.message-item.expanded {
+  padding: 12px;
+}
+
+.message-header.clickable {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2px 0;
+  border-radius: var(--radius);
+  transition: background-color 0.2s;
+  min-height: 32px;
+  max-height: 32px;
+}
+
+.message-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.message-header-right {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.expand-indicator {
+  font-size: 10px;
+  color: var(--text-muted);
+  width: 12px;
+  text-align: center;
+}
+
+.message-preview {
+  margin-top: 4px;
+  padding: 4px 0;
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 内联消息预览样式 */
+.message-preview-inline {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-left: 12px;
+  flex: 1;
+  min-width: 0;
+  opacity: 0.8;
+  padding: 2px 8px;
+  background-color: rgba(255, 255, 255, 0.02);
+  border-radius: 3px;
+  border-left: 2px solid var(--text-muted);
+}
+
+.no-connection-hint {
+  text-align: center;
+  color: var(--text-muted);
+  font-style: italic;
+  margin: 40px 0;
+}
+
+/* 紧凑的消息样式 */
+.message-item.collapsed .message-header {
+  margin-bottom: 0;
+}
+
+.message-item.collapsed {
+  border-radius: var(--radius);
+  transition: all 0.2s;
+  padding: 2px 6px;
+  margin-bottom: 2px;
+}
+
+.message-item.collapsed:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.message-item.expanded {
+  padding: 12px;
+  margin-bottom: 8px;
+}
+
+.message-item {
+  transition: all 0.2s;
+}
+
+/* 消息详情面板特定的分割线样式 */
+.message-detail-resize-handle.panel-resize-handle.horizontal {
+  height: 2px;
+  background-color: rgba(255, 255, 255, 0.3);
+  transition: background-color 0.2s;
+}
+
+
+.message-detail-resize-handle.panel-resize-handle.horizontal::after {
+  width: 24px;
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.4);
+  opacity: 0.6;
+}

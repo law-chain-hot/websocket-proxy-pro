@@ -1,0 +1,334 @@
+/* 按钮样式 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 12px;
+  text-decoration: none;
+  font-family: inherit;
+}
+
+.btn:hover {
+  background-color: var(--bg-secondary);
+  border-color: var(--accent-color);
+}
+
+.btn.btn-primary {
+  background-color: var(--accent-color);
+  color: white;
+  border-color: var(--accent-color);
+}
+
+.btn.btn-primary:hover {
+  background-color: #005a9e;
+  border-color: #005a9e;
+}
+
+.btn.btn-success {
+  background-color: var(--success-color);
+  color: white;
+  border-color: var(--success-color);
+}
+
+.btn.btn-success:hover {
+  background-color: #1e7e34;
+  border-color: #1e7e34;
+}
+
+.btn.btn-warning {
+  background-color: var(--warning-color);
+  color: black;
+  border-color: var(--warning-color);
+}
+
+.btn.btn-warning:hover {
+  background-color: #e0a800;
+  border-color: #e0a800;
+}
+
+.btn.btn-danger {
+  background-color: var(--danger-color);
+  color: white;
+  border-color: var(--danger-color);
+}
+
+.btn.btn-danger:hover {
+  background-color: #bd2130;
+  border-color: #bd2130;
+}
+
+.btn.btn-secondary {
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border-color: var(--border-color);
+}
+
+.btn.btn-secondary:hover {
+  background-color: var(--bg-secondary);
+  border-color: var(--accent-color);
+}
+
+/* 开关样式 */
+.switch-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.switch-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+  flex: 1;
+}
+
+.switch-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 10px;
+  min-width: 60px;
+  justify-content: center;
+}
+
+.switch-btn:hover {
+  background-color: var(--bg-secondary);
+  border-color: var(--accent-color);
+}
+
+.switch-btn.on {
+  background-color: var(--success-color);
+  border-color: var(--success-color);
+  color: white;
+}
+
+.switch-btn.on:hover {
+  background-color: #1e7e34;
+  border-color: #1e7e34;
+}
+
+.switch-btn.off {
+  background-color: var(--bg-tertiary);
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+}
+
+.switch-btn.off:hover {
+  background-color: var(--bg-secondary);
+  border-color: var(--accent-color);
+}
+
+.switch-indicator {
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.switch-text {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* 表单元素样式 */
+.form-control {
+  padding: 3px 6px;
+  border: 1px solid var(--border-color);
+  border-radius: 2px;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 11px;
+  outline: none;
+  height: 20px;
+  box-sizing: border-box;
+}
+
+.form-control:focus {
+  border-color: var(--accent-color);
+}
+
+.form-control::placeholder {
+  color: var(--text-muted);
+}
+
+/* 复选框样式 */
+.checkbox-control {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 11px;
+  color: var(--text-secondary);
+  user-select: none;
+  height: 20px;
+}
+
+.checkbox-control input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkbox-control .checkmark {
+  position: relative;
+  height: 12px;
+  width: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 2px;
+  background-color: var(--bg-primary);
+  transition: all 0.2s;
+}
+
+.checkbox-control:hover .checkmark {
+  border-color: var(--accent-color);
+}
+
+.checkbox-control input:checked ~ .checkmark {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+}
+
+.checkbox-control .checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+  left: 3px;
+  top: 1px;
+  width: 4px;
+  height: 7px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.checkbox-control input:checked ~ .checkmark:after {
+  display: block;
+}
+
+.checkbox-control .checkbox-label {
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
+/* 复制按钮样式 */
+.copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 11px;
+  font-family: inherit;
+  opacity: 0.7;
+}
+
+.copy-btn:hover {
+  opacity: 1;
+  background-color: var(--bg-primary);
+  border-color: var(--accent-color);
+  color: var(--text-primary);
+}
+
+.copy-btn.copied {
+  background-color: var(--success-color);
+  border-color: var(--success-color);
+  color: white;
+  opacity: 1;
+}
+
+.copy-btn.copied:hover {
+  background-color: var(--success-color);
+  border-color: var(--success-color);
+}
+
+/* 关闭按钮样式 */
+.close-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px;
+  transition: color 0.2s;
+  margin-left: auto;
+}
+
+.close-btn:hover {
+  color: var(--text-primary);
+}
+
+/* 状态指示器样式 */
+.status {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: var(--radius);
+  font-weight: 500;
+}
+
+.status.active {
+  background-color: var(--success-color);
+  color: white;
+}
+
+.status.inactive {
+  background-color: var(--danger-color);
+  color: white;
+}
+
+.status.paused {
+  background-color: var(--warning-color);
+  color: black;
+}
+
+/* 动作按钮样式 */
+.action-btn {
+  padding: 4px 8px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 10px;
+  transition: all 0.2s;
+}
+
+.action-btn:hover {
+  background-color: var(--bg-secondary);
+  border-color: var(--accent-color);
+}
+
+.action-btn.edit {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.action-btn.allow {
+  border-color: var(--success-color);
+  color: var(--success-color);
+}
+
+.action-btn.block {
+  border-color: var(--danger-color);
+  color: var(--danger-color);
+} 

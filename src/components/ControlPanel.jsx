@@ -4,20 +4,9 @@ const ControlPanel = ({
   isMonitoring,
   onStartMonitoring,
   onStopMonitoring,
-  isPaused,
-  onPauseConnections,
-  onResumeConnections,
 }) => {
   const [blockOutgoing, setBlockOutgoing] = useState(false);
   const [blockIncoming, setBlockIncoming] = useState(false);
-
-  const handlePauseToggle = () => {
-    if (isPaused) {
-      onResumeConnections();
-    } else {
-      onPauseConnections();
-    }
-  };
 
   const handleBlockOutgoingToggle = () => {
     const newState = !blockOutgoing;
@@ -52,82 +41,76 @@ const ControlPanel = ({
   return (
     <div className="control-panel">
       <div className="control-grid">
-        {/* 左列：监控和连接控制 */}
+        {/* 左列：监控控制 */}
         <div className="control-column">
           <div className="control-section compact">
-            <h3>🎛️ Monitoring Control</h3>
-            <div className="control-buttons">
-              {!isMonitoring ? (
-                <button className="btn btn-success" onClick={onStartMonitoring}>
-                  ▶️ Start Monitoring
+            <h3>🎛️ Monitor</h3>
+            <div className="control-switches">
+              <div className="switch-item">
+                <span className="switch-label">Monitoring</span>
+                <button 
+                  className={`switch-btn ${isMonitoring ? 'on' : 'off'}`}
+                  onClick={isMonitoring ? onStopMonitoring : onStartMonitoring}
+                >
+                  <span className="switch-indicator">
+                    {isMonitoring ? '●○' : '○●'}
+                  </span>
+                  <span className="switch-text">
+                    {isMonitoring ? 'ON' : 'OFF'}
+                  </span>
                 </button>
-              ) : (
-                <button className="btn btn-warning" onClick={onStopMonitoring}>
-                  ⏹️ Stop Monitoring
-                </button>
-              )}
+              </div>
             </div>
           </div>
-
-          {isMonitoring && (
-            <div className="control-section compact">
-              <h3>⏸️ Connection Control</h3>
-              <div className="control-buttons">
-                <button
-                  className={`btn ${isPaused ? "btn-success" : "btn-warning"}`}
-                  onClick={handlePauseToggle}
-                  title={
-                    isPaused
-                      ? "Resume all WebSocket communications"
-                      : "Pause all WebSocket communications"
-                  }
-                >
-                  {isPaused ? "▶️ Resume All" : "⏸️ Pause All"}
-                </button>
-              </div>
-            </div>
-          )}
         </div>
 
-        {/* 右列：状态和消息过滤 */}
+        {/* 右列：消息控制 */}
         <div className="control-column">
           {isMonitoring && (
-            <>
-              <div className="status-section">
-                {isPaused ? (
-                  <div className="status-paused">
-                    🚫 All WebSocket communications are paused
-                  </div>
-                ) : (
-                  <div className="status-active">
-                    ✅ WebSocket communications are active
-                  </div>
-                )}
-              </div>
-
-              <div className="control-section compact">
-                <h3>🚧 Message Filtering</h3>
-                <div className="control-toggles">
-                  <label className="toggle-label">
-                    <input
-                      type="checkbox"
-                      checked={blockOutgoing}
-                      onChange={handleBlockOutgoingToggle}
-                    />
-                    <span className="toggle-text">🚫 Block Outgoing</span>
-                  </label>
-
-                  <label className="toggle-label">
-                    <input
-                      type="checkbox"
-                      checked={blockIncoming}
-                      onChange={handleBlockIncomingToggle}
-                    />
-                    <span className="toggle-text">🚫 Block Incoming</span>
-                  </label>
+            <div className="control-section compact">
+              <h3>🚫 Message Control</h3>
+              <div className="control-switches">
+                <div className="switch-item">
+                  <span className="switch-label">Block Outgoing</span>
+                  <button 
+                    className={`switch-btn ${blockOutgoing ? 'on' : 'off'}`}
+                    onClick={handleBlockOutgoingToggle}
+                    title={
+                      blockOutgoing
+                        ? "Currently blocking outgoing messages"
+                        : "Currently allowing outgoing messages"
+                    }
+                  >
+                    <span className="switch-indicator">
+                      {blockOutgoing ? '●○' : '○●'}
+                    </span>
+                    <span className="switch-text">
+                      {blockOutgoing ? 'ON' : 'OFF'}
+                    </span>
+                  </button>
+                </div>
+                
+                <div className="switch-item">
+                  <span className="switch-label">Block Incoming</span>
+                  <button 
+                    className={`switch-btn ${blockIncoming ? 'on' : 'off'}`}
+                    onClick={handleBlockIncomingToggle}
+                    title={
+                      blockIncoming
+                        ? "Currently blocking incoming messages"
+                        : "Currently allowing incoming messages"
+                    }
+                  >
+                    <span className="switch-indicator">
+                      {blockIncoming ? '●○' : '○●'}
+                    </span>
+                    <span className="switch-text">
+                      {blockIncoming ? 'ON' : 'OFF'}
+                    </span>
+                  </button>
                 </div>
               </div>
-            </>
+            </div>
           )}
         </div>
       </div>
