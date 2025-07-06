@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 const ControlPanel = ({
   isMonitoring,
@@ -7,12 +7,68 @@ const ControlPanel = ({
 }) => {
   const [blockOutgoing, setBlockOutgoing] = useState(false);
   const [blockIncoming, setBlockIncoming] = useState(false);
+  const [autoStartEnabled, setAutoStartEnabled] = useState(true);
 
-  const handleBlockOutgoingToggle = () => {
+  // Load settings from chrome.storage on mount
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const result = await chrome.storage.local.get({
+          autoStartEnabled: true,
+          blockOutgoing: false,
+          blockIncoming: false,
+        });
+        
+        setAutoStartEnabled(result.autoStartEnabled);
+        setBlockOutgoing(result.blockOutgoing);
+        setBlockIncoming(result.blockIncoming);
+        
+        console.log("✅ Settings loaded:", result);
+      } catch (error) {
+        console.error("❌ Failed to load settings:", error);
+      }
+    };
+
+    loadSettings();
+  }, []);
+
+  // Save settings to chrome.storage whenever they change
+  const saveSettings = async (newSettings) => {
+    try {
+      await chrome.storage.local.set(newSettings);
+      console.log("✅ Settings saved:", newSettings);
+    } catch (error) {
+      console.error("❌ Failed to save settings:", error);
+    }
+  };
+
+  const handleAutoStartToggle = async () => {
+    const newState = !autoStartEnabled;
+    setAutoStartEnabled(newState);
+    
+    // Save to persistent storage
+    await saveSettings({ autoStartEnabled: newState });
+
+    // Send message to background script to update auto-start behavior
+    try {
+      await chrome.runtime.sendMessage({
+        type: "set-auto-start",
+        enabled: newState,
+      });
+      console.log("✅ Auto-start setting updated:", newState);
+    } catch (error) {
+      console.error("❌ Failed to update auto-start setting:", error);
+    }
+  };
+
+  const handleBlockOutgoingToggle = async () => {
     const newState = !blockOutgoing;
     setBlockOutgoing(newState);
+    
+    // Save to persistent storage
+    await saveSettings({ blockOutgoing: newState });
 
-    // 发送阻止出站消息的命令
+    // Send message to background script
     chrome.runtime
       .sendMessage({
         type: "block-outgoing",
@@ -23,11 +79,14 @@ const ControlPanel = ({
       });
   };
 
-  const handleBlockIncomingToggle = () => {
+  const handleBlockIncomingToggle = async () => {
     const newState = !blockIncoming;
     setBlockIncoming(newState);
+    
+    // Save to persistent storage
+    await saveSettings({ blockIncoming: newState });
 
-    // 发送阻止入站消息的命令
+    // Send message to background script
     chrome.runtime
       .sendMessage({
         type: "block-incoming",
@@ -41,7 +100,7 @@ const ControlPanel = ({
   return (
     <div className="control-panel">
       <div className="control-grid">
-        {/* 左列：监控控制 */}
+        {/* Left column: Monitor control */}
         <div className="control-column">
           <div className="control-section compact">
             <h3>🎛️ Monitor</h3>
@@ -60,11 +119,31 @@ const ControlPanel = ({
                   </span>
                 </button>
               </div>
+              
+              <div className="switch-item">
+                <span className="switch-label">Auto-start on new pages</span>
+                <button 
+                  className={`switch-btn ${autoStartEnabled ? 'on' : 'off'}`}
+                  onClick={handleAutoStartToggle}
+                  title={
+                    autoStartEnabled
+                      ? "Automatically start monitoring on new pages"
+                      : "Manually start monitoring on new pages"
+                  }
+                >
+                  <span className="switch-indicator">
+                    {autoStartEnabled ? '●○' : '○●'}
+                  </span>
+                  <span className="switch-text">
+                    {autoStartEnabled ? 'ON' : 'OFF'}
+                  </span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* 右列：消息控制 */}
+        {/* Right column: Message control */}
         <div className="control-column">
           {isMonitoring && (
             <div className="control-section compact">

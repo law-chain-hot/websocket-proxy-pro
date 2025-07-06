@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { filterMessages } from "../utils/filterUtils";
 import JsonViewer from "./JsonViewer";
+import FavoriteMessages from "./FavoriteMessages";
 import useNewMessageHighlight from "../hooks/useNewMessageHighlight";
 
 // SVG图标组件
@@ -49,6 +50,7 @@ const MessageDetails = ({
   const [copiedMessageKey, setCopiedMessageKey] = useState(null); // 已拷贝的消息key
   const [typeFilter, setTypeFilter] = useState("all"); // 'all' | 'message' | 'event'
   const [sortOrder, setSortOrder] = useState("desc"); // 'asc' | 'desc' 时间排序
+  const [showFavoriteMessages, setShowFavoriteMessages] = useState(false); // Show favorite messages panel
   
   // Use new message highlight hook
   const { isNewMessage, clearHighlights } = useNewMessageHighlight(connection, 500);
@@ -63,6 +65,45 @@ const MessageDetails = ({
     });
     const milliseconds = date.getMilliseconds().toString().padStart(3, "0");
     return `${timeString}.${milliseconds.substring(0, 3)}`;
+  };
+
+  // Add message to favorites
+  const addToFavorites = async (message) => {
+    if (!message || message.type !== "message") return;
+
+    try {
+      // Load existing favorites
+      const result = await chrome.storage.local.get({
+        favoriteMessages: [],
+      });
+      
+      const existingFavorites = result.favoriteMessages || [];
+      const messageData = message.data || "";
+      
+      // Check if message already exists in favorites
+      const messageExists = existingFavorites.some(fav => fav.message === messageData);
+      if (messageExists) {
+        console.log("Message already in favorites");
+        return;
+      }
+
+      // Create new favorite
+      const newFavorite = {
+        id: Date.now(),
+        title: `Message from ${new Date(message.timestamp).toLocaleString()}`,
+        message: messageData,
+        createdAt: Date.now(),
+      };
+
+      const updatedFavorites = [...existingFavorites, newFavorite];
+      
+      // Save to storage
+      await chrome.storage.local.set({ favoriteMessages: updatedFavorites });
+      
+      console.log("✅ Message added to favorites:", newFavorite);
+    } catch (error) {
+      console.error("❌ Failed to add message to favorites:", error);
+    }
   };
 
   if (!connection) {
@@ -276,6 +317,14 @@ const MessageDetails = ({
               </label>
 
               <button
+                className="favorites-btn"
+                onClick={() => setShowFavoriteMessages(!showFavoriteMessages)}
+                title="Manage favorite messages"
+              >
+                ⭐ Favorites
+              </button>
+
+              <button
                 className="clear-messages-btn"
                 onClick={handleClearMessagesList}
                 disabled={!connection || !connection.messages || connection.messages.length === 0}
@@ -351,16 +400,24 @@ const MessageDetails = ({
                         
                         const messageKey = selectedMessageKey;
                         return (
-                          // <div className="detail-body">
                           <>
-                            {/* <div className="detail-actions">
+                            <div className="detail-actions">
+                              {selectedMessage.type === "message" && (
+                                <button
+                                  className="favorite-btn"
+                                  onClick={() => addToFavorites(selectedMessage)}
+                                  title="Add to favorites"
+                                >
+                                  ⭐ Add to Favorites
+                                </button>
+                              )}
                               <button
                                 className="close-btn"
                                 onClick={() => setSelectedMessageKey(null)}
                               >
                                 ✕
                               </button>
-                            </div> */}
+                            </div>
                             <JsonViewer
                               data={selectedMessage.data}
                               className="compact"
@@ -377,9 +434,7 @@ const MessageDetails = ({
                                 <button className="action-btn block">Block</button>
                               </div>
                             )}
-                          {/* </div> */}
                           </>
-
                         );
                       })()}
                     </div>
@@ -390,6 +445,17 @@ const MessageDetails = ({
           </PanelGroup>
         )}
       </div>
+
+      {/* Favorite Messages Panel */}
+      {showFavoriteMessages && (
+        <div className="favorite-messages-overlay">
+          <FavoriteMessages
+            connection={connection}
+            onSimulateMessage={onSimulateMessage}
+            onClose={() => setShowFavoriteMessages(false)}
+          />
+        </div>
+      )}
     </div>
   );
 };
