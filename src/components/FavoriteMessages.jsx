@@ -2,11 +2,9 @@ import React, { useState, useEffect } from "react";
 
 const FavoriteMessages = ({ connection, onSimulateMessage, onClose }) => {
   const [favoriteMessages, setFavoriteMessages] = useState([]);
-  const [newFavoriteTitle, setNewFavoriteTitle] = useState("");
-  const [newFavoriteMessage, setNewFavoriteMessage] = useState("");
-  const [editingId, setEditingId] = useState(null);
-  const [editingTitle, setEditingTitle] = useState("");
-  const [editingMessage, setEditingMessage] = useState("");
+  const [isAddingNew, setIsAddingNew] = useState(false);
+  const [newMessage, setNewMessage] = useState("");
+  const [newTitle, setNewTitle] = useState("");
 
   // Load favorite messages from storage on mount
   useEffect(() => {
@@ -33,13 +31,14 @@ const FavoriteMessages = ({ connection, onSimulateMessage, onClose }) => {
     }
   };
 
-  const addFavoriteMessage = async () => {
-    if (!newFavoriteTitle.trim() || !newFavoriteMessage.trim()) return;
+  const addFavorite = async () => {
+    if (!newMessage.trim()) return;
 
+    const title = newTitle.trim() || `Message ${favoriteMessages.length + 1}`;
     const newFavorite = {
       id: Date.now(),
-      title: newFavoriteTitle.trim(),
-      message: newFavoriteMessage.trim(),
+      title,
+      message: newMessage.trim(),
       createdAt: Date.now(),
     };
 
@@ -47,43 +46,19 @@ const FavoriteMessages = ({ connection, onSimulateMessage, onClose }) => {
     setFavoriteMessages(updatedMessages);
     await saveFavoriteMessages(updatedMessages);
 
-    setNewFavoriteTitle("");
-    setNewFavoriteMessage("");
+    // Reset form
+    setNewMessage("");
+    setNewTitle("");
+    setIsAddingNew(false);
   };
 
-  const deleteFavoriteMessage = async (id) => {
+  const deleteFavorite = async (id) => {
     const updatedMessages = favoriteMessages.filter(msg => msg.id !== id);
     setFavoriteMessages(updatedMessages);
     await saveFavoriteMessages(updatedMessages);
   };
 
-  const startEditing = (favorite) => {
-    setEditingId(favorite.id);
-    setEditingTitle(favorite.title);
-    setEditingMessage(favorite.message);
-  };
-
-  const cancelEditing = () => {
-    setEditingId(null);
-    setEditingTitle("");
-    setEditingMessage("");
-  };
-
-  const saveEditing = async () => {
-    if (!editingTitle.trim() || !editingMessage.trim()) return;
-
-    const updatedMessages = favoriteMessages.map(msg =>
-      msg.id === editingId
-        ? { ...msg, title: editingTitle.trim(), message: editingMessage.trim() }
-        : msg
-    );
-
-    setFavoriteMessages(updatedMessages);
-    await saveFavoriteMessages(updatedMessages);
-    cancelEditing();
-  };
-
-  const sendFavoriteMessage = async (message) => {
+  const sendFavorite = async (message) => {
     if (!connection || !onSimulateMessage) return;
 
     try {
@@ -98,140 +73,115 @@ const FavoriteMessages = ({ connection, onSimulateMessage, onClose }) => {
     }
   };
 
-  const formatTimestamp = (timestamp) => {
-    const date = new Date(timestamp);
-    return date.toLocaleString();
+  const formatDate = (timestamp) => {
+    return new Date(timestamp).toLocaleDateString();
   };
 
   return (
-    <div className="favorite-messages-panel">
-      <div className="favorite-messages-header">
-        <h3>⭐ Favorite Messages</h3>
-        <button className="close-btn" onClick={onClose}>
-          ✕
-        </button>
-      </div>
-
-      <div className="favorite-messages-content">
-        {/* Add new favorite message form */}
-        <div className="add-favorite-form">
-          <h4>➕ Add New Favorite</h4>
-          <div className="form-group">
-            <label>Title:</label>
-            <input
-              type="text"
-              value={newFavoriteTitle}
-              onChange={(e) => setNewFavoriteTitle(e.target.value)}
-              placeholder="Enter message title"
-              maxLength={50}
-            />
-          </div>
-          <div className="form-group">
-            <label>Message:</label>
-            <textarea
-              value={newFavoriteMessage}
-              onChange={(e) => setNewFavoriteMessage(e.target.value)}
-              placeholder="Enter message content"
-              rows={3}
-            />
-          </div>
-          <button
-            className="add-favorite-btn"
-            onClick={addFavoriteMessage}
-            disabled={!newFavoriteTitle.trim() || !newFavoriteMessage.trim()}
-          >
-            ➕ Add Favorite
+    <div className="favorite-messages-overlay">
+      <div className="favorite-messages-panel">
+        <div className="favorite-header">
+          <h3>⭐ Favorite Messages</h3>
+          <button className="close-btn" onClick={onClose}>
+            ✕
           </button>
         </div>
 
-        {/* Favorite messages list */}
-        <div className="favorite-messages-list">
-          <h4>📋 Saved Favorites ({favoriteMessages.length})</h4>
-          {favoriteMessages.length === 0 ? (
-            <div className="empty-state">
-              <p>No favorite messages yet. Add one above!</p>
-            </div>
-          ) : (
-            <div className="favorites-grid">
-              {favoriteMessages.map((favorite) => (
-                <div key={favorite.id} className="favorite-message-card">
-                  {editingId === favorite.id ? (
-                    // Edit mode
-                    <div className="edit-mode">
-                      <div className="form-group">
-                        <input
-                          type="text"
-                          value={editingTitle}
-                          onChange={(e) => setEditingTitle(e.target.value)}
-                          placeholder="Title"
-                          maxLength={50}
-                        />
-                      </div>
-                      <div className="form-group">
-                        <textarea
-                          value={editingMessage}
-                          onChange={(e) => setEditingMessage(e.target.value)}
-                          placeholder="Message"
-                          rows={3}
-                        />
-                      </div>
-                      <div className="edit-actions">
-                        <button
-                          className="save-btn"
-                          onClick={saveEditing}
-                          disabled={!editingTitle.trim() || !editingMessage.trim()}
-                        >
-                          ✓ Save
-                        </button>
-                        <button className="cancel-btn" onClick={cancelEditing}>
-                          ✕ Cancel
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    // Display mode
-                    <div className="display-mode">
-                      <div className="favorite-header">
-                        <h5 className="favorite-title">{favorite.title}</h5>
-                        <div className="favorite-actions">
-                          <button
-                            className="action-btn edit"
-                            onClick={() => startEditing(favorite)}
-                            title="Edit message"
-                          >
-                            ✏️
-                          </button>
-                          <button
-                            className="action-btn delete"
-                            onClick={() => deleteFavoriteMessage(favorite.id)}
-                            title="Delete message"
-                          >
-                            🗑️
-                          </button>
-                        </div>
-                      </div>
-                      <div className="favorite-message">
-                        <pre>{favorite.message}</pre>
-                      </div>
-                      <div className="favorite-footer">
-                        <span className="favorite-date">
-                          {formatTimestamp(favorite.createdAt)}
-                        </span>
-                        <button
-                          className="send-btn"
-                          onClick={() => sendFavoriteMessage(favorite.message)}
-                          disabled={!connection}
-                          title="Send this message"
-                        >
-                          🚀 Send
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
+        <div className="favorite-content">
+          {/* Add new button */}
+          {!isAddingNew && (
+            <div className="add-section">
+              <button 
+                className="add-new-btn"
+                onClick={() => setIsAddingNew(true)}
+              >
+                ➕ Add New Favorite
+              </button>
             </div>
           )}
+
+          {/* Add new form */}
+          {isAddingNew && (
+            <div className="add-form">
+              <input
+                type="text"
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+                placeholder="Title (optional)"
+                className="title-input"
+              />
+              <textarea
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                placeholder="Enter your message here..."
+                className="message-input"
+                rows={3}
+                autoFocus
+              />
+              <div className="form-actions">
+                <button 
+                  className="save-btn"
+                  onClick={addFavorite}
+                  disabled={!newMessage.trim()}
+                >
+                  💾 Save
+                </button>
+                <button 
+                  className="cancel-btn"
+                  onClick={() => {
+                    setIsAddingNew(false);
+                    setNewMessage("");
+                    setNewTitle("");
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Favorites list */}
+          <div className="favorites-list">
+            {favoriteMessages.length === 0 ? (
+              <div className="empty-message">
+                <p>No favorite messages yet.</p>
+                <p>Add one to get started!</p>
+              </div>
+            ) : (
+              favoriteMessages.map((favorite) => (
+                <div key={favorite.id} className="favorite-item">
+                  <div className="favorite-info">
+                    <div className="favorite-title">{favorite.title}</div>
+                    <div className="favorite-preview">
+                      {favorite.message.length > 100 
+                        ? favorite.message.substring(0, 100) + "..." 
+                        : favorite.message
+                      }
+                    </div>
+                    <div className="favorite-date">{formatDate(favorite.createdAt)}</div>
+                  </div>
+                  
+                  <div className="favorite-actions">
+                    <button
+                      className="send-btn"
+                      onClick={() => sendFavorite(favorite.message)}
+                      disabled={!connection}
+                      title="Send this message"
+                    >
+                      🚀
+                    </button>
+                    <button
+                      className="delete-btn"
+                      onClick={() => deleteFavorite(favorite.id)}
+                      title="Delete this message"
+                    >
+                      �️
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </div>
     </div>

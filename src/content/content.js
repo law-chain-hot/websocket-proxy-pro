@@ -9,6 +9,9 @@ function generateMessageId() {
 
 // Get current tab ID
 let currentTabId = null;
+let monitoringStarted = false;
+
+// Get tab ID from background
 chrome.runtime.sendMessage({ type: 'get-tab-id' }, (response) => {
   if (response && response.tabId) {
     currentTabId = response.tabId;
@@ -25,6 +28,9 @@ function injectWebSocketProxy() {
     script.onload = function () {
       console.log("✅ External script loaded and executed");
       this.remove(); // Clean up script tag
+      
+      // After injection, check if we should start monitoring immediately
+      initializeMonitoring();
     };
     script.onerror = function () {
       console.error("❌ Failed to load external script");
@@ -36,6 +42,59 @@ function injectWebSocketProxy() {
   } catch (error) {
     console.error("❌ Error injecting script:", error);
   }
+}
+
+// Initialize monitoring based on auto-start settings
+function initializeMonitoring() {
+  chrome.storage.local.get({
+    autoStartEnabled: true,
+  }, (result) => {
+    if (result.autoStartEnabled && !monitoringStarted) {
+      console.log("🚀 Auto-start enabled, starting monitoring immediately");
+      startMonitoring();
+    }
+  });
+}
+
+// Start monitoring function
+function startMonitoring() {
+  if (monitoringStarted) return;
+  
+  monitoringStarted = true;
+  console.log("🚀 Starting WebSocket monitoring in content script");
+  
+  // Send start monitoring command to injected script
+  window.postMessage(
+    {
+      source: "websocket-proxy-content",
+      type: "start-monitoring",
+    },
+    "*"
+  );
+  
+  // Notify background script
+  chrome.runtime.sendMessage({
+    type: "start-monitoring",
+  }).catch((error) => {
+    console.warn("⚠️ Failed to notify background about monitoring start:", error);
+  });
+}
+
+// Stop monitoring function
+function stopMonitoring() {
+  if (!monitoringStarted) return;
+  
+  monitoringStarted = false;
+  console.log("⏹️ Stopping WebSocket monitoring in content script");
+  
+  // Send stop monitoring command to injected script
+  window.postMessage(
+    {
+      source: "websocket-proxy-content",
+      type: "stop-monitoring",
+    },
+    "*"
+  );
 }
 
 // Immediately execute injection
@@ -99,25 +158,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   // Forward control commands to injected script
   switch (message.type) {
     case "start-monitoring":
-      console.log("🚀 Forwarding start monitoring to injected script");
-      window.postMessage(
-        {
-          source: "websocket-proxy-content",
-          type: "start-monitoring",
-        },
-        "*"
-      );
+      console.log("🚀 Received start monitoring command from background");
+      startMonitoring();
       break;
 
     case "stop-monitoring":
-      console.log("⏹️ Forwarding stop monitoring to injected script");
-      window.postMessage(
-        {
-          source: "websocket-proxy-content",
-          type: "stop-monitoring",
-        },
-        "*"
-      );
+      console.log("⏹️ Received stop monitoring command from background");
+      stopMonitoring();
       break;
 
     case "block-outgoing":
@@ -191,38 +238,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   sendResponse({ received: true });
 });
 
-// Auto-start functionality: Check if auto-start is enabled and start monitoring
-chrome.storage.local.get({ autoStartEnabled: true }, (result) => {
-  if (result.autoStartEnabled) {
-    console.log("🚀 Auto-start enabled, requesting monitoring start");
-    
-    // Send start monitoring message to background script
-    chrome.runtime.sendMessage({
-      type: "start-monitoring",
-    }).then((response) => {
-      console.log("✅ Auto-start monitoring requested:", response);
-    }).catch((error) => {
-      console.warn("⚠️ Auto-start monitoring request failed:", error);
-    });
-  }
-});
-
 // Listen for page navigation events to maintain auto-start functionality
 document.addEventListener("DOMContentLoaded", () => {
   console.log("📄 DOM Content loaded, checking auto-start settings");
   
+  // Re-check auto-start settings on DOM ready
   chrome.storage.local.get({ autoStartEnabled: true }, (result) => {
-    if (result.autoStartEnabled) {
-      console.log("🚀 Auto-start enabled on DOM ready, requesting monitoring start");
-      
-      // Send start monitoring message to background script
-      chrome.runtime.sendMessage({
-        type: "start-monitoring",
-      }).then((response) => {
-        console.log("✅ Auto-start monitoring requested on DOM ready:", response);
-      }).catch((error) => {
-        console.warn("⚠️ Auto-start monitoring request failed on DOM ready:", error);
-      });
+    if (result.autoStartEnabled && !monitoringStarted) {
+      console.log("🚀 Auto-start enabled on DOM ready, starting monitoring");
+      startMonitoring();
     }
   });
 });

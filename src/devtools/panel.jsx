@@ -8,7 +8,7 @@ import FloatingSimulate from "../components/FloatingSimulate.jsx";
 import "../styles/main.css";
 
 const WebSocketPanel = () => {
-  const [isMonitoring, setIsMonitoring] = useState(false);
+  const [isMonitoring, setIsMonitoring] = useState(false); // Default to false - monitoring disabled
   const [websocketEvents, setWebsocketEvents] = useState([]);
   const [selectedConnectionId, setSelectedConnectionId] = useState(null);
   const [currentTabId, setCurrentTabId] = useState(null);
@@ -36,25 +36,33 @@ const WebSocketPanel = () => {
     getCurrentTab();
   }, []);
 
-  // Load auto-start settings on mount
+  // Check if auto-start is enabled and sync monitoring state
   useEffect(() => {
-    const loadAutoStartSettings = async () => {
+    const syncMonitoringState = async () => {
       try {
         const result = await chrome.storage.local.get({
           autoStartEnabled: true,
         });
         
-        // If auto-start is enabled, start monitoring automatically
+        // If auto-start is enabled, the content script should already be monitoring
+        // We need to sync our state with the actual monitoring state
         if (result.autoStartEnabled) {
-          console.log("🚀 Auto-start enabled, starting monitoring automatically");
-          handleStartMonitoring();
+          console.log("� Auto-start enabled, syncing monitoring state");
+          setIsMonitoring(true);
+          
+          // Also ensure background script knows we're monitoring
+          chrome.runtime.sendMessage({
+            type: "start-monitoring",
+          }).catch((error) => {
+            console.warn("⚠️ Failed to sync monitoring state with background:", error);
+          });
         }
       } catch (error) {
-        console.error("❌ Failed to load auto-start settings:", error);
+        console.error("❌ Failed to sync monitoring state:", error);
       }
     };
 
-    loadAutoStartSettings();
+    syncMonitoringState();
   }, []);
   
   useEffect(() => {
