@@ -359,9 +359,6 @@ const WebSocketPanel = () => {
           <div className="panel-left-section-fixed">
             <div className="control-panel-container-fixed">
               <div className="panel-wrapper">
-                <div className="panel-title">
-                  <h3>🎛️ Control Panel</h3>
-                </div>
                 <div className="panel-body">
                   <ControlPanel
                     isMonitoring={isMonitoring}
@@ -374,18 +371,6 @@ const WebSocketPanel = () => {
 
             <div className="websocket-list-container-fixed">
               <div className="panel-wrapper">
-                <div className="panel-title">
-                  <h3>🔗 Websocket Connections</h3>
-                  {connectionsMap.size > 0 && (
-                    <button
-                      className="panel-title-btn"
-                      onClick={handleClearConnections}
-                      title="Clear all WebSocket connections and events"
-                    >
-                      🗑️ Clear All
-                    </button>
-                  )}
-                </div>
                 <div className="panel-body">
                   <WebSocketList
                     websocketEvents={websocketEvents}
