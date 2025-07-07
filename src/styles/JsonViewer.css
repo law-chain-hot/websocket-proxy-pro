@@ -7,48 +7,111 @@
 }
 
 .json-viewer-controls {
+  /* background: rgba(37, 48, 63, 0.7); */
+  /* backdrop-filter: blur(2px); */
+  /* border: 1px solid rgba(55, 65, 81, 0.3); */
+  border-radius: 8px;
+  padding: 6px 8px;
+  margin-bottom: 6px;
+  flex-shrink: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
-  padding: 8px 12px;
-  background-color: var(--bg-secondary);
-  border-bottom: 1px solid var(--border-color);
-  flex-shrink: 0;
 }
 
 .json-viewer-controls-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 3px;
 }
 
 .json-viewer-controls-right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
-.json-viewer-wrap-control {
+/* 按钮样式 */
+.json-viewer-btn {
   display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 11px;
-  color: var(--text-secondary);
-  cursor: pointer;
-  user-select: none;
-}
-
-.json-viewer-wrap-control input[type="checkbox"] {
-  width: 12px;
-  height: 12px;
-  margin: 0;
-  cursor: pointer;
-}
-
-.json-viewer-wrap-text {
+  gap: 2px;
+  padding: 1px 4px;
+  border-radius: 6px;
+  border: 1px solid;
+  background: transparent;
+  color: #9ca3af;
   font-size: 11px;
   font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.json-viewer-btn-inactive {
+  background: rgba(55, 65, 81, 0.3);
+  border-color: rgba(75, 85, 99, 0.4);
+  color: #9ca3af;
+}
+
+.json-viewer-btn-inactive:hover {
+  background: rgba(75, 85, 99, 0.4);
+  border-color: rgba(107, 114, 128, 0.5);
+}
+
+.json-viewer-btn-active-green {
+  background: rgba(5, 150, 105, 0.15);
+  border-color: rgba(5, 150, 105, 0.25);
+  color: #10b981;
+}
+
+.json-viewer-btn-active-orange {
+  background: rgba(234, 88, 12, 0.15);
+  border-color: rgba(234, 88, 12, 0.25);
+  color: #f97316;
+}
+
+.json-viewer-btn-active-purple {
+  background: rgba(147, 51, 234, 0.15);
+  border-color: rgba(147, 51, 234, 0.25);
+  color: #a855f7;
+}
+
+.json-viewer-btn-active-blue {
+  background: rgba(37, 99, 235, 0.15);
+  border-color: rgba(37, 99, 235, 0.25);
+  color: #3b82f6;
+}
+
+.json-viewer-divider {
+  width: 1px;
+  height: 18px;
+  background-color: #4b5563;
+  margin: 0 3px;
+}
+
+/* Badge样式 */
+.json-viewer-badge {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid;
+  background: transparent;
+  font-size: 10px;
+  font-weight: 500;
+  font-family: inherit;
+}
+
+.json-viewer-badge-green {
+  border-color: rgba(5, 150, 105, 0.4);
+  color: #10b981;
+}
+
+.json-viewer-badge-yellow {
+  border-color: rgba(217, 119, 6, 0.4);
+  color: #f59e0b;
 }
 
 .json-viewer-status {
@@ -93,7 +156,7 @@
 .json-viewer-container {
   flex: 1;
   overflow: hidden;
-  background-color: var(--bg-primary);
+  background-color: #262626;
   position: relative;
   min-height: 0;
 }
@@ -259,4 +322,4 @@
 .json-viewer-codemirror .cm-searchMatch-selected {
   background-color: rgba(255, 193, 7, 0.6);
   border: 1px solid rgba(255, 193, 7, 0.9);
-} 
+}

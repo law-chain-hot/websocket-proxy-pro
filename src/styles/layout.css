@@ -142,9 +142,9 @@
 
 /* 固定宽度的左侧面板 */
 .panel-left-section-fixed {
-  width: 300px;
-  min-width: 300px;
-  max-width: 300px;
+  width: 280px;
+  min-width: 280px;
+  max-width: 280px;
   overflow: hidden;
   display: flex;
   flex-direction: column;

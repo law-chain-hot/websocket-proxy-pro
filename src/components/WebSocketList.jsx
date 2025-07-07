@@ -168,7 +168,7 @@ const WebSocketList = ({
         </div>
         <div
           style={{
-            fontSize: "11px",
+            fontSize: "10px",
             color: "var(--text-secondary)",
             marginBottom: "8px",
             fontFamily:
