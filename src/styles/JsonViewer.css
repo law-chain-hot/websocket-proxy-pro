@@ -230,6 +230,7 @@
 /* 紧凑的 JSON 查看器（用于详情面板）*/
 .json-viewer.compact .json-viewer-controls {
   padding: 6px 8px;
+  
 }
 
 .json-viewer.compact .json-viewer-wrap-control {

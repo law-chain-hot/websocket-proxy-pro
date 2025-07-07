@@ -260,6 +260,7 @@
 }
 
 .ws-messages-table {
+  margin-bottom: 10px;
   width: 100%;
   border-collapse: collapse;
   border-spacing: 0;
@@ -354,15 +355,15 @@
 }
 
 .message-row.outgoing {
-  border-right: 3px solid var(--success-color);
+  /* border-right: 3px solid var(--success-color); */
 }
 
 .message-row.incoming {
-  border-right: 3px solid var(--danger-color);
+  /* border-right: 3px solid var(--danger-color); */
 }
 
 .message-row.system {
-  border-right: 3px solid var(--accent-color);
+  /* border-right: 3px solid var(--accent-color); */
 }
 
 .message-row.simulated {
