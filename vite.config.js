@@ -11,7 +11,11 @@ export default defineConfig(({ mode }) => ({
       webExtConfig: {
         startUrl: "https://example.com",
       },
-      additionalInputs: ["src/content/injected.js", "src/devtools/panel.html"],
+      additionalInputs: [
+        "src/content/injected.js",
+        "src/devtools/panel.html",
+        "src/popup/popup.html",
+      ],
     }),
   ],
   build: {

@@ -30,6 +30,7 @@
   ],
 
   "action": {
-    "default_title": "WebSocket Proxy"
+    "default_title": "WebSocket Proxy",
+    "default_popup": "src/popup/popup.html"
   }
 }

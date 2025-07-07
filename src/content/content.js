@@ -1,10 +1,21 @@
 // Content script - 桥接页面和 background script
 console.log("🌉 WebSocket Proxy content script loaded");
 
+// 检查扩展是否启用
+function checkExtensionEnabled() {
+  return new Promise((resolve) => {
+    chrome.storage.local.get(["websocket-proxy-enabled"], (result) => {
+      resolve(result["websocket-proxy-enabled"] !== false); // 默认启用
+    });
+  });
+}
+
 // 消息去重机制
 let messageIdCounter = 0;
 function generateMessageId() {
-  return `msg_${Date.now()}_${++messageIdCounter}_${Math.random().toString(36).substr(2, 9)}`;
+  return `msg_${Date.now()}_${++messageIdCounter}_${Math.random()
+    .toString(36)
+    .substr(2, 9)}`;
 }
 
 // 使用外部文件注入，避免 CSP 内联脚本限制
@@ -30,12 +41,19 @@ function injectWebSocketProxy() {
   }
 }
 
-// 立即执行注入
-if (document.readyState === "loading") {
-  injectWebSocketProxy();
-} else {
-  injectWebSocketProxy();
-}
+// 检查扩展状态后执行注入
+checkExtensionEnabled().then((enabled) => {
+  if (enabled) {
+    console.log("✅ Extension enabled, injecting WebSocket proxy");
+    if (document.readyState === "loading") {
+      injectWebSocketProxy();
+    } else {
+      injectWebSocketProxy();
+    }
+  } else {
+    console.log("❌ Extension disabled, skipping WebSocket proxy injection");
+  }
+});
 
 console.log("📍 Content script injection attempt completed");
 
@@ -56,7 +74,7 @@ window.addEventListener("message", (event) => {
       data: event.data.payload,
       messageId: messageId,
       timestamp: Date.now(),
-      source: "content-script"
+      source: "content-script",
     };
 
     console.log("📤 Sending message with ID:", messageId);
@@ -65,10 +83,7 @@ window.addEventListener("message", (event) => {
     chrome.runtime
       .sendMessage(messageWithId)
       .then((response) => {
-        console.log(
-          "✅ Message sent to extension, response:",
-          response
-        );
+        console.log("✅ Message sent to extension, response:", response);
       })
       .catch((error) => {
         console.error("❌ Failed to send message to extension:", error);
@@ -162,6 +177,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       );
       break;
 
+    case "show-devtools-hint":
+      console.log("💡 Showing DevTools hint notification");
+      // 可以在页面上显示一个临时提示
+      showDevToolsHint();
+      break;
+
     default:
       console.log("❓ Unknown control message type:", message.type);
       break;
@@ -169,5 +190,50 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   sendResponse({ received: true });
 });
+
+// 显示DevTools提示
+function showDevToolsHint() {
+  const hint = document.createElement("div");
+  hint.innerHTML = `
+    <div style="
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #1a202c;
+      color: #f7fafc;
+      padding: 16px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      z-index: 10000;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 14px;
+      max-width: 300px;
+      border: 1px solid #3182ce;
+    ">
+      <div style="font-weight: 600; margin-bottom: 8px;">📊 WebSocket Proxy</div>
+      <div style="margin-bottom: 12px;">Press <strong>F12</strong> to open DevTools</div>
+      <div style="margin-bottom: 8px;">Find <strong>"WebSocket Proxy"</strong> tab</div>
+      <button onclick="this.parentElement.parentElement.remove()" style="
+        background: #3182ce;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        float: right;
+        margin-top: 8px;
+      ">Got it</button>
+    </div>
+  `;
+
+  document.body.appendChild(hint);
+
+  // 5秒后自动消失
+  setTimeout(() => {
+    if (hint.parentElement) {
+      hint.remove();
+    }
+  }, 5000);
+}
 
 console.log("✅ Content script initialization complete");
