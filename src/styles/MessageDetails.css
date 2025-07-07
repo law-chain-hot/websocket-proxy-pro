@@ -373,6 +373,105 @@
   background-color: rgba(220, 53, 69, 0.2);
 }
 
+/* New message highlight animation */
+.message-row.new-message {
+  animation: newMessageHighlight 0.5s ease-out forwards;
+  background-color: rgba(76, 175, 80, 0.4) !important;
+}
+
+@keyframes newMessageHighlight {
+  0% {
+    background-color: rgba(76, 175, 80, 0.6);
+    transform: scale(1);
+    box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+  }
+  50% {
+    background-color: rgba(76, 175, 80, 0.4);
+    transform: scale(1);
+    box-shadow: 0 0 8px rgba(76, 175, 80, 0.3);
+  }
+  100% {
+    background-color: transparent;
+    transform: scale(1);
+    box-shadow: none;
+  }
+}
+
+/* Ensure new message animation takes priority over hover */
+.message-row.new-message:hover {
+  background-color: rgba(76, 175, 80, 0.3) !important;
+}
+
+/* Special handling for selected new messages */
+.message-row.new-message.selected {
+  animation: newMessageHighlightSelected 0.5s ease-out forwards;
+  background-color: var(--accent-color) !important;
+}
+
+@keyframes newMessageHighlightSelected {
+  0% {
+    background-color: rgba(76, 175, 80, 0.6);
+    transform: scale(1);
+    box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+  }
+  50% {
+    background-color: rgba(76, 175, 80, 0.4);
+    transform: scale(1);
+    box-shadow: 0 0 8px rgba(76, 175, 80, 0.3);
+  }
+  100% {
+    background-color: var(--accent-color);
+    transform: scale(1);
+    box-shadow: none;
+  }
+}
+
+/* Special handling for simulated new messages */
+.message-row.new-message.simulated {
+  animation: newMessageHighlightSimulated 0.5s ease-out forwards;
+}
+
+@keyframes newMessageHighlightSimulated {
+  0% {
+    background-color: rgba(255, 193, 7, 0.8);
+    transform: scale(1);
+    box-shadow: 0 0 10px rgba(255, 193, 7, 0.6);
+  }
+  50% {
+    background-color: rgba(255, 193, 7, 0.5);
+    transform: scale(1);
+    box-shadow: 0 0 8px rgba(255, 193, 7, 0.4);
+  }
+  100% {
+    background-color: rgba(255, 193, 7, 0.2);
+    transform: scale(1);
+    box-shadow: none;
+  }
+}
+
+/* Special handling for blocked new messages */
+.message-row.new-message.blocked {
+  animation: newMessageHighlightBlocked 0.5s ease-out forwards;
+}
+
+@keyframes newMessageHighlightBlocked {
+  0% {
+    background-color: rgba(220, 53, 69, 0.8);
+    transform: scale(1);
+    box-shadow: 0 0 10px rgba(220, 53, 69, 0.6);
+  }
+  50% {
+    background-color: rgba(220, 53, 69, 0.5);
+    transform: scale(1);
+    box-shadow: 0 0 8px rgba(220, 53, 69, 0.4);
+  }
+  100% {
+    background-color: rgba(220, 53, 69, 0.2);
+    transform: scale(1);
+    box-shadow: none;
+  }
+}
+
 .data-cell {
   display: flex;
   align-items: center;

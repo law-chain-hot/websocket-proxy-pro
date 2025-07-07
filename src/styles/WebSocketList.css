@@ -69,13 +69,12 @@
 }
 
 .connection-item:hover {
-  background-color: var(--bg-tertiary);
-  border-color: var(--accent-color);
+  filter: brightness(1.1);
 }
 
 .connection-item.selected {
-  background-color: var(--accent-color);
-  border-color: var(--accent-color);
+  background-color: var(--accent-transparent-color);
+  border-color: var(--accent-transparent-color);
   color: white;
 }
 

@@ -4,7 +4,7 @@ console.log("🚀 WebSocket Proxy background script loaded");
 // 存储 WebSocket 连接数据
 let websocketData = {
   connections: [],
-  isMonitoring: false,
+  isMonitoring: true, // 默认开启监控
 };
 
 // 监听来自 DevTools Panel 的消息
@@ -30,6 +30,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       sendResponse({ success: true, monitoring: false });
       break;
 
+    case "get-existing-data":
+      console.log("📊 Panel requesting existing data, connections:", websocketData.connections.length);
+      
+      // 发送现有数据到 DevTools Panel
+      sendResponse({ 
+        success: true, 
+        data: websocketData.connections,
+        isMonitoring: websocketData.isMonitoring 
+      });
+      break;
+
     case "block-outgoing":
       console.log("🚫 Toggling outgoing message blocking:", message.enabled);
 
@@ -47,12 +58,21 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       break;
 
     case "websocket-event":
-      console.log("📊 WebSocket event received:", message.data, "MessageID:", message.messageId);
+      // Ensure tabId is present
+      if (!sender.tab?.id) {
+        console.warn("⚠️ WebSocket event missing tabId, ignoring:", message.data);
+        sendResponse({ received: false, reason: "missing-tabId" });
+        break;
+      }
 
-      // 存储连接数据
+      // Add tabId to event data
+      message.data.tabId = sender.tab.id;
+      message.tabId = sender.tab.id;
+
+      // Store connection data
       websocketData.connections.push(message.data);
 
-      // 转发到 DevTools Panel
+      // Forward to DevTools Panel
       forwardToDevTools(message);
       sendResponse({ received: true });
       break;
@@ -68,8 +88,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     case "simulate-message":
       console.log("🎭 Simulating message:", message.data);
 
-      // 通知指定标签页的 content script 模拟消息
-      notifyAllTabs("simulate-message", message.data);
+      // 如果有指定的 tabId，只通知那个标签页；否则通知所有标签页
+      const targetTabId = message.data.tabId || null;
+      notifyAllTabs("simulate-message", message.data, targetTabId);
       sendResponse({ success: true, simulated: true });
       break;
 
@@ -82,11 +103,21 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   return true; // 保持消息通道开放以支持异步响应
 });
 
-// 通知所有活动标签页的 content scripts
-async function notifyAllTabs(type, data = {}) {
+// 通知所有标签页或特定标签页的 content scripts
+async function notifyAllTabs(type, data = {}, targetTabId = null) {
   try {
-    const tabs = await chrome.tabs.query({ active: true });
-    console.log(`📢 Notifying ${tabs.length} active tabs about: ${type}`);
+    let tabs;
+    
+    if (targetTabId) {
+      // 通知特定标签页
+      tabs = await chrome.tabs.query({ currentWindow: true });
+      tabs = tabs.filter(tab => tab.id === targetTabId);
+    } else {
+      // 通知所有标签页（不仅仅是活动的）
+      tabs = await chrome.tabs.query({ currentWindow: true });
+    }
+    
+    console.log(`📢 Notifying ${tabs.length} tabs about: ${type}`, targetTabId ? `(target: ${targetTabId})` : '(all tabs)');
 
     const promises = tabs.map((tab) => {
       if (tab.id) {
@@ -102,7 +133,7 @@ async function notifyAllTabs(type, data = {}) {
     });
 
     await Promise.all(promises);
-    console.log(`✅ Notification sent to all tabs: ${type}`);
+    console.log(`✅ Notification sent to tabs: ${type}`);
   } catch (error) {
     console.error("❌ Failed to notify tabs:", error);
   }
@@ -135,8 +166,12 @@ chrome.runtime.onStartup.addListener(() => {
   console.log("🌅 Extension started");
   websocketData = {
     connections: [],
-    isMonitoring: false,
+    isMonitoring: true, // 默认开启监控
   };
+  
+  // 开始监控所有标签页
+  console.log("🚀 Auto-starting WebSocket monitoring on startup");
+  notifyAllTabs("start-monitoring");
 });
 
 // 当扩展安装时
@@ -144,8 +179,12 @@ chrome.runtime.onInstalled.addListener(() => {
   console.log("📦 Extension installed/updated");
   websocketData = {
     connections: [],
-    isMonitoring: false,
+    isMonitoring: true, // 默认开启监控
   };
+  
+  // 开始监控所有标签页
+  console.log("🚀 Auto-starting WebSocket monitoring on install");
+  notifyAllTabs("start-monitoring");
 });
 
 console.log("✅ Background script initialization complete");

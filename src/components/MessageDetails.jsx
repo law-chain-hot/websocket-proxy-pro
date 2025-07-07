@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { filterMessages } from "../utils/filterUtils";
 import JsonViewer from "./JsonViewer";
+import useNewMessageHighlight from "../hooks/useNewMessageHighlight";
 
 // SVG图标组件
 const Icons = {
@@ -48,6 +49,9 @@ const MessageDetails = ({
   const [copiedMessageKey, setCopiedMessageKey] = useState(null); // 已拷贝的消息key
   const [typeFilter, setTypeFilter] = useState("all"); // 'all' | 'message' | 'event'
   const [sortOrder, setSortOrder] = useState("desc"); // 'asc' | 'desc' 时间排序
+  
+  // Use new message highlight hook
+  const { isNewMessage, clearHighlights } = useNewMessageHighlight(connection, 500);
 
   const formatTimestamp = (timestamp) => {
     const date = new Date(timestamp);
@@ -152,6 +156,7 @@ const MessageDetails = ({
     if (!connection || !onClearMessages) return;
     onClearMessages(connection.id);
     setSelectedMessageKey(null);
+    clearHighlights(); // Clear any remaining highlights
   };
 
   const getSelectedMessage = () => {
@@ -306,6 +311,7 @@ const MessageDetails = ({
                     {sortedMessages.map((message, index) => {
                       const messageKey = `${message.timestamp}-${message.direction}`;
                       const isSelected = selectedMessageKey === messageKey;
+                      const isNewMsg = isNewMessage(messageKey);
                       return (
                         <tr
                           key={`${messageKey}-${index}`} // 保持React key的唯一性
@@ -313,7 +319,7 @@ const MessageDetails = ({
                             message.simulated ? "simulated" : ""
                           } ${message.blocked ? "blocked" : ""} ${
                             isSelected ? "selected" : ""
-                          }`}
+                          } ${isNewMsg ? "new-message" : ""}`}
                           onClick={() => handleMessageClick(messageKey)}
                         >
                           <td className="col-data">

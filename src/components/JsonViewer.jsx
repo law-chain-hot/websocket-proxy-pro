@@ -218,9 +218,7 @@ const JsonViewer = ({
                 ✓ JSON
               </span>
             )}
-          </div>
-
-          <div className="json-viewer-controls-right">
+            
             {onCopy && (
               <button
                 className={`json-viewer-copy-btn ${isCopied ? 'copied' : ''}`}
@@ -230,6 +228,9 @@ const JsonViewer = ({
                 {isCopied ? copiedText : copyButtonText}
               </button>
             )}
+          </div>
+
+          <div className="json-viewer-controls-right">
           </div>
         </div>
       )}

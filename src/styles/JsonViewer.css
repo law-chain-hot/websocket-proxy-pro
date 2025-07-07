@@ -113,7 +113,7 @@
   overflow-x: auto;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: var(--border-color) transparent;
+  scrollbar-color: var(--text-muted) transparent;
   max-height: 100%;
 }
 
@@ -127,13 +127,13 @@
 }
 
 .json-viewer-codemirror .cm-scroller::-webkit-scrollbar-thumb {
-  background-color: var(--border-color);
+  background-color: var(--text-muted);
   border-radius: 4px;
   border: 1px solid transparent;
 }
 
 .json-viewer-codemirror .cm-scroller::-webkit-scrollbar-thumb:hover {
-  background-color: var(--text-muted);
+  background-color: var(--text-secondary);
 }
 
 .json-viewer-codemirror .cm-scroller::-webkit-scrollbar-corner {

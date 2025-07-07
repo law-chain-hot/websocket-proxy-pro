@@ -8,6 +8,7 @@
   --text-muted: #808080;
   --border-color: #404040;
   --accent-color: #007acc;
+  --accent-transparent-color: #037bcb5d;
   --success-color: #28a745;
   --warning-color: #ffc107;
   --danger-color: #dc3545;
@@ -47,12 +48,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--bg-tertiary);
+  background: var(--text-muted);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--border-color);
+  background: var(--text-secondary);
 }
 
 /* 通用点击样式 */

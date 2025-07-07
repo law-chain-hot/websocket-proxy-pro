@@ -3,7 +3,6 @@ import { Rnd } from "react-rnd";
 import JsonViewer from "./JsonViewer";
 
 const SimulateMessagePanel = ({ connection, onSimulateMessage }) => {
-  const [simulateDirection, setSimulateDirection] = useState("incoming");
   const [simulateMessage, setSimulateMessage] = useState('{\n  "message": "Hello World",\n  "timestamp": "2025-01-01T00:00:00Z"\n}');
   const [isSending, setIsSending] = useState(false);
   const [isWindowOpen, setIsWindowOpen] = useState(false);
@@ -18,7 +17,6 @@ const SimulateMessagePanel = ({ connection, onSimulateMessage }) => {
     if (savedState) {
       try {
         const parsed = JSON.parse(savedState);
-        setSimulateDirection(parsed.direction || "incoming");
         setSimulateMessage(parsed.message || '{\n  "message": "Hello World",\n  "timestamp": "2025-01-01T00:00:00Z"\n}');
         setIsPinned(parsed.isPinned || false);
         setWindowPosition(parsed.position || { x: window.innerWidth - 420, y: 100 });
@@ -35,14 +33,13 @@ const SimulateMessagePanel = ({ connection, onSimulateMessage }) => {
   // Save state to localStorage whenever relevant state changes
   useEffect(() => {
     const stateToSave = {
-      direction: simulateDirection,
       message: simulateMessage,
       isPinned,
       position: windowPosition,
       size: windowSize,
     };
     localStorage.setItem('simulateMessagePanel', JSON.stringify(stateToSave));
-  }, [simulateDirection, simulateMessage, isPinned, windowPosition, windowSize]);
+  }, [simulateMessage, isPinned, windowPosition, windowSize]);
 
   // Handle click outside to close (only when not pinned)
   useEffect(() => {
@@ -58,7 +55,8 @@ const SimulateMessagePanel = ({ connection, onSimulateMessage }) => {
     }
   }, [isWindowOpen, isPinned]);
 
-  const handleSimulateMessage = async () => {
+  // Handle simulate message with direction parameter
+  const handleSimulateMessage = async (direction) => {
     if (!connection || !simulateMessage.trim() || isSending) {
       return;
     }
@@ -69,12 +67,12 @@ const SimulateMessagePanel = ({ connection, onSimulateMessage }) => {
       await onSimulateMessage({
         connectionId: connection.id,
         message: simulateMessage,
-        direction: simulateDirection,
+        direction: direction,
       });
     } catch (error) {
       console.error("Failed to simulate message:", error);
     } finally {
-      setTimeout(() => setIsSending(false), 1000);
+      setTimeout(() => setIsSending(false), 200);
     }
   };
 
@@ -85,7 +83,8 @@ const SimulateMessagePanel = ({ connection, onSimulateMessage }) => {
   const handleKeyPress = (e) => {
     if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
       e.preventDefault();
-      handleSimulateMessage();
+      // Default to incoming on Ctrl+Enter
+      handleSimulateMessage("incoming");
     }
   };
 
@@ -136,8 +135,8 @@ const SimulateMessagePanel = ({ connection, onSimulateMessage }) => {
           position={windowPosition}
           onDragStop={handleDragStop}
           onResizeStop={handleResizeStop}
-          minWidth={350}
-          minHeight={400}
+          minWidth={300}
+          minHeight={350}
           maxWidth={1500}
           maxHeight={1200}
           bounds="parent"
@@ -185,20 +184,6 @@ const SimulateMessagePanel = ({ connection, onSimulateMessage }) => {
                 </div>
               ) : (
                 <div className="simulate-content">
-                  <div className="simulate-controls">
-                    <div className="direction-control">
-                      <label>Direction:</label>
-                      <select
-                        value={simulateDirection}
-                        onChange={(e) => setSimulateDirection(e.target.value)}
-                        disabled={isSending}
-                      >
-                        <option value="incoming">📥 Simulate Incoming</option>
-                        <option value="outgoing">📤 Simulate Outgoing</option>
-                      </select>
-                    </div>
-                  </div>
-
                   <div className="simulate-input-container">
                     <div className="simulate-input-editor" onKeyDown={handleKeyPress}>
                       <JsonViewer
@@ -214,15 +199,18 @@ const SimulateMessagePanel = ({ connection, onSimulateMessage }) => {
                   <div className="simulate-actions">
                     <div className="simulate-buttons">
                       <button
-                        className={`simulate-btn ${simulateDirection}`}
-                        onClick={handleSimulateMessage}
+                        className="simulate-btn incoming"
+                        onClick={() => handleSimulateMessage("incoming")}
                         disabled={!simulateMessage.trim() || isSending}
                       >
-                        {isSending
-                          ? "⏳ Sending..."
-                          : simulateDirection === "incoming"
-                          ? "📥 Simulate Receive"
-                          : "📤 Simulate Send"}
+                        {isSending ? "⏳ Sending..." : "📥 Simulate Receive"}
+                      </button>
+                      <button
+                        className="simulate-btn outgoing"
+                        onClick={() => handleSimulateMessage("outgoing")}
+                        disabled={!simulateMessage.trim() || isSending}
+                      >
+                        {isSending ? "⏳ Sending..." : "📤 Simulate Send"}
                       </button>
                     </div>
                   </div>
