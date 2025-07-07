@@ -163,14 +163,12 @@ const JsonViewer = ({
       },
       ".cm-editor": {
         height: "100%",
-        backgroundColor: "#262626", // 编辑器主体背景色
       },
       ".cm-scroller": {
         fontFamily:
           'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
         lineHeight: "1.3",
         overflow: "auto",
-        backgroundColor: "#262626", // 滚动区域背景色
       },
       ".cm-focused": {
         outline: "none",
@@ -181,7 +179,6 @@ const JsonViewer = ({
       ".cm-content": {
         padding: "8px",
         minHeight: "100%",
-        backgroundColor: "#262626", // 内容区域背景色
       },
       ".cm-gutters": {
         backgroundColor: "#333333", // 行号区域背景色
