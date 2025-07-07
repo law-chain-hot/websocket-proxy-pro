@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Rnd } from "react-rnd";
+import { Tabs } from "@mantine/core";
 import JsonViewer from "./JsonViewer";
 
 const SimulateMessagePanel = ({ connection, onSimulateMessage }) => {
@@ -180,41 +181,95 @@ const SimulateMessagePanel = ({ connection, onSimulateMessage }) => {
             <div className="simulate-window-content">
               {!connection ? (
                 <div className="simulate-panel-empty floating">
-                  <p>🔌 请先选择一个WebSocket连接</p>
+                  <p>🔌 Please select a WebSocket connection first</p>
                 </div>
               ) : (
-                <div className="simulate-content">
-                  <div className="simulate-input-container">
-                    <div className="simulate-input-editor" onKeyDown={handleKeyPress}>
-                      <JsonViewer
-                        data={simulateMessage}
-                        readOnly={false}
-                        onChange={handleMessageChange}
-                        showControls={true}
-                        className="simulate-editor"
-                      />
-                    </div>
-                  </div>
+                <Tabs variant="pills" defaultValue="editor" orientation="horizontal">
+                  <Tabs.List>
+                    <Tabs.Tab value="editor">📝 Editor</Tabs.Tab>
+                    <Tabs.Tab value="favorites">⭐ Favorites</Tabs.Tab>
+                    <Tabs.Tab value="system">🔧 System</Tabs.Tab>
+                  </Tabs.List>
 
-                  <div className="simulate-actions">
-                    <div className="simulate-buttons">
-                      <button
-                        className="simulate-btn incoming"
-                        onClick={() => handleSimulateMessage("incoming")}
-                        disabled={!simulateMessage.trim() || isSending}
-                      >
-                        {isSending ? "⏳ Sending..." : "📥 Simulate Receive"}
-                      </button>
-                      <button
-                        className="simulate-btn outgoing"
-                        onClick={() => handleSimulateMessage("outgoing")}
-                        disabled={!simulateMessage.trim() || isSending}
-                      >
-                        {isSending ? "⏳ Sending..." : "📤 Simulate Send"}
-                      </button>
+                  <Tabs.Panel value="editor">
+                    <div className="simulate-content">
+                      <div className="simulate-input-container">
+                        <div className="simulate-input-editor" onKeyDown={handleKeyPress}>
+                          <JsonViewer
+                            data={simulateMessage}
+                            readOnly={false}
+                            onChange={handleMessageChange}
+                            showControls={true}
+                            className="simulate-editor"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="simulate-actions">
+                        <div className="simulate-buttons">
+                          <button
+                            className="simulate-btn incoming"
+                            onClick={() => handleSimulateMessage("incoming")}
+                            disabled={!simulateMessage.trim() || isSending}
+                          >
+                            {isSending ? "⏳ Sending..." : "📥 Simulate Receive"}
+                          </button>
+                          <button
+                            className="simulate-btn outgoing"
+                            onClick={() => handleSimulateMessage("outgoing")}
+                            disabled={!simulateMessage.trim() || isSending}
+                          >
+                            {isSending ? "⏳ Sending..." : "📤 Simulate Send"}
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
+                  </Tabs.Panel>
+
+                  <Tabs.Panel value="favorites">
+                    <div className="tab-content-placeholder">
+                      <div className="placeholder-icon">⭐</div>
+                      <h4>Message Templates</h4>
+                      <p>Save and reuse your WebSocket messages</p>
+                      <div className="feature-list">
+                        <div className="feature-item">
+                          <span className="feature-dot"></span>
+                          <span>Save frequently used messages</span>
+                        </div>
+                        <div className="feature-item">
+                          <span className="feature-dot"></span>
+                          <span>Quick access to message history</span>
+                        </div>
+                        <div className="feature-item">
+                          <span className="feature-dot"></span>
+                          <span>Organize message library</span>
+                        </div>
+                      </div>
+                    </div>
+                  </Tabs.Panel>
+
+                  <Tabs.Panel value="system">
+                    <div className="tab-content-placeholder">
+                      <div className="placeholder-icon">🔧</div>
+                      <h4>System Events</h4>
+                      <p>Simulate WebSocket system events and states</p>
+                      <div className="feature-list">
+                        <div className="feature-item">
+                          <span className="feature-dot"></span>
+                          <span>Connection open/close events</span>
+                        </div>
+                        <div className="feature-item">
+                          <span className="feature-dot"></span>
+                          <span>Network error simulation</span>
+                        </div>
+                        <div className="feature-item">
+                          <span className="feature-dot"></span>
+                          <span>Timeout and retry events</span>
+                        </div>
+                      </div>
+                    </div>
+                  </Tabs.Panel>
+                </Tabs>
               )}
             </div>
           </div>

@@ -11,6 +11,7 @@ import {
   Copy,
   Edit,
   CheckCircle,
+  SquareStack,
 } from "lucide-react";
 import "../styles/JsonViewer.css";
 
@@ -247,10 +248,10 @@ const JsonViewer = ({
                     ? "json-viewer-btn-active-purple"
                     : "json-viewer-btn-inactive"
                 }`}
-                title="Nested JSON"
+                title="Nested Parse JSON"
               >
-                <Hash size={14} />
-                <span>Nested</span>
+                <SquareStack size={14} />
+                <span>Nested Parse</span>
               </button>
             )}
 

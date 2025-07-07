@@ -589,6 +589,109 @@
   color: var(--text-secondary);
 }
 
+/* Tab content placeholder styles */
+.tab-content-placeholder {
+  padding: 32px 24px;
+  text-align: center;
+  color: var(--text-secondary);
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.placeholder-icon {
+  font-size: 32px;
+  margin-bottom: 16px;
+  opacity: 0.6;
+}
+
+.tab-content-placeholder h4 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  color: var(--text-primary);
+  font-weight: 600;
+  letter-spacing: -0.5px;
+}
+
+.tab-content-placeholder p {
+  margin: 0 0 24px 0;
+  font-size: 14px;
+  opacity: 0.75;
+  line-height: 1.5;
+}
+
+.feature-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: left;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  opacity: 0.8;
+  line-height: 1.4;
+}
+
+.feature-dot {
+  width: 4px;
+  height: 4px;
+  background-color: var(--accent-color);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Mantine tabs custom styles for simulate window */
+.simulate-window-content .mantine-Tabs-root {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.simulate-window-content .mantine-Tabs-list {
+  padding: 12px 16px 8px 16px;
+  background-color: var(--bg-primary);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  gap: 8px;
+}
+
+.simulate-window-content .mantine-Tabs-tab {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 8px 12px;
+  color: var(--text-secondary);
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.simulate-window-content .mantine-Tabs-tab:hover {
+  color: var(--text-primary);
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.simulate-window-content .mantine-Tabs-tab[data-active] {
+  color: white;
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.simulate-window-content .mantine-Tabs-panel {
+  flex: 1;
+  overflow: auto;
+  background-color: var(--bg-primary);
+}
+
 /* Responsive adjustments for smaller windows */
 @media (max-width: 480px) {
   .simulate-floating-window {
