@@ -87,34 +87,25 @@ const WebSocketList = ({
         style={{
           background: isSelected
             ? "rgba(59, 130, 246, 0.2)" // 选中时使用蓝色背景
-            : isActive
-            ? "rgba(37, 99, 235, 0.1)"
             : "rgba(75, 85, 99, 0.3)",
           border: isSelected
-            ? "2px solid rgba(59, 130, 246, 0.8)" // 选中时使用更明显的蓝色边框
-            : isActive
-            ? "1px solid rgba(59, 130, 246, 0.3)"
+            ? "1px solid rgba(59, 130, 246, 0.8)" // 选中时使用更明显的蓝色边框
             : "1px solid rgba(107, 114, 128, 0.5)",
           borderRadius: "8px",
-          padding: isSelected ? "11px" : "12px", // 选中时调整padding来适应更粗的边框
+          padding: "12px",
           cursor: "pointer",
           transition: "all 0.2s ease",
           marginBottom: "8px",
-          transform: isSelected ? "scale(1.02)" : "scale(1)", // 选中时轻微放大
         }}
         onClick={() => onSelectConnection(connection.id)}
         onMouseEnter={(e) => {
           if (!isSelected) {
-            e.currentTarget.style.background = isActive
-              ? "rgba(37, 99, 235, 0.15)"
-              : "rgba(75, 85, 99, 0.4)";
+            e.currentTarget.style.background = "rgba(75, 85, 99, 0.4)";
           }
         }}
         onMouseLeave={(e) => {
           if (!isSelected) {
-            e.currentTarget.style.background = isActive
-              ? "rgba(37, 99, 235, 0.1)"
-              : "rgba(75, 85, 99, 0.3)";
+            e.currentTarget.style.background = "rgba(75, 85, 99, 0.3)";
           }
         }}
       >
