@@ -65,7 +65,6 @@ const ControlPanel = ({
                   track: { cursor: "pointer" },
                   thumb: { cursor: "pointer" },
                 }}
-                withThumbIndicator={false}
               />
             </Group>
 
