@@ -31,7 +31,7 @@ const JsonViewer = ({
 }) => {
   const [textWrap, setTextWrap] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
-  const [nestedParse, setNestedParse] = useState(false);
+  const [nestedParse, setNestedParse] = useState(true);
 
   // Recursively parse nested JSON strings
   const parseNestedJson = useCallback((obj) => {
@@ -107,10 +107,22 @@ const JsonViewer = ({
   const handleChange = useCallback(
     (value) => {
       if (onChange && !readOnly) {
+        if (nestedParse) {
+          try {
+            // Try to parse and apply nested parsing
+            const parsed = JSON.parse(value);
+            const nestedParsed = parseNestedJson(parsed);
+            const formattedContent = JSON.stringify(nestedParsed, null, collapsed ? 0 : 2);
+            onChange(formattedContent);
+            return;
+          } catch (error) {
+            // If parsing fails, use original value
+          }
+        }
         onChange(value);
       }
     },
-    [onChange, readOnly]
+    [onChange, readOnly, nestedParse, parseNestedJson, collapsed]
   );
 
   // Handle formatting changes in edit mode

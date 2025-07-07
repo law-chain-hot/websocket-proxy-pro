@@ -78,6 +78,12 @@ const SimulateMessagePanel = ({ connection, onSimulateMessage }) => {
   };
 
   const handleMessageChange = (value) => {
+    console.log('📨 SimulateMessagePanel handleMessageChange:', {
+      valueLength: value.length,
+      currentMessageLength: simulateMessage.length,
+      valuePreview: value.substring(0, 100) + (value.length > 100 ? '...' : ''),
+      changed: value !== simulateMessage
+    });
     setSimulateMessage(value);
   };
 

@@ -1,5 +1,6 @@
 /* JsonViewer 组件样式 */
 .json-viewer {
+  background: var(--bg-primary);
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -13,6 +14,7 @@
   border-radius: 8px;
   padding: 6px 8px;
   margin-bottom: 6px;
+  margin-top: 10px;
   flex-shrink: 0;
   display: flex;
   justify-content: space-between;
@@ -230,7 +232,7 @@
 /* 紧凑的 JSON 查看器（用于详情面板）*/
 .json-viewer.compact .json-viewer-controls {
   padding: 6px 8px;
-  
+
 }
 
 .json-viewer.compact .json-viewer-wrap-control {
