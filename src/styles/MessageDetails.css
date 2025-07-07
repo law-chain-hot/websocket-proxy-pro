@@ -937,6 +937,15 @@
   height: 2px;
   background-color: rgba(255, 255, 255, 0.3);
   transition: background-color 0.2s;
+  box-shadow: rgb(0 0 0 / 88%) 0px -8px 13px 1px;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+  padding: 3px 0;
+  position: relative;
+}
+
+.message-detail-resize-handle.panel-resize-handle.horizontal:hover {
+  background-color: rgba(64, 156, 255, 0.7);
 }
 
 .message-detail-resize-handle.panel-resize-handle.horizontal::after {

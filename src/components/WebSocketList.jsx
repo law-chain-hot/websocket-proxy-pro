@@ -221,7 +221,7 @@ const WebSocketList = ({
       <div
         style={{
           flexShrink: 0,
-          padding: "16px 16px 8px 16px",
+          padding: "20px 16px 4px 16px",
           backgroundColor: "var(--bg-primary)",
         }}
       >
@@ -239,7 +239,7 @@ const WebSocketList = ({
               gap: "8px",
             }}
           >
-            <div
+            {/* <div
               style={{
                 width: 24,
                 height: 24,
@@ -252,10 +252,10 @@ const WebSocketList = ({
               }}
             >
               <Wifi size={12} color="rgb(74, 222, 128)" />
-            </div>
+            </div> */}
             <span
               style={{
-                fontSize: "14px",
+                fontSize: "15px",
                 fontWeight: 600,
                 color: "rgb(229, 231, 235)",
                 margin: 0,
@@ -270,7 +270,7 @@ const WebSocketList = ({
                 padding: "3px",
                 background: "transparent",
                 color: "#f87171",
-                border: "1px solid rgba(220, 38, 38, 0.3)",
+                border: "0px solid rgba(220, 38, 38, 0.3)",
                 borderRadius: "4px",
                 cursor: "pointer",
                 transition: "all 0.2s ease",
@@ -299,10 +299,10 @@ const WebSocketList = ({
         style={{
           flex: 1,
           overflowY: "auto",
-          padding: "16px",
+          padding: "8px 16px 0px 16px",
         }}
       >
-        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
           {/* Active Connections */}
           {activeConnections.length > 0 && (
             <div>
