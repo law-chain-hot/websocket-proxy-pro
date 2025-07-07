@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import { createRoot } from "react-dom/client";
-import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { MantineProvider } from "@mantine/core";
 import "@mantine/core/styles.css";
 import ControlPanel from "../components/ControlPanel.jsx";
@@ -355,69 +354,55 @@ const WebSocketPanel = () => {
           </div>
         </div>
 
-        <PanelGroup direction="horizontal" className="panel-content">
-          {/* 左侧垂直布局：ControlPanel + WebSocketList */}
-          <Panel
-            defaultSize={30}
-            minSize={20}
-            maxSize={50}
-            className="panel-left-section"
-          >
-            <PanelGroup direction="vertical">
-              <Panel
-                defaultSize={30}
-                minSize={12}
-                maxSize={40}
-                className="control-panel-container"
-              >
-                <div className="panel-wrapper">
-                  <div className="panel-title">
-                    <h3>🎛️ Control Panel</h3>
-                  </div>
-                  <div className="panel-body">
-                    <ControlPanel
-                      isMonitoring={isMonitoring}
-                      onStartMonitoring={handleStartMonitoring}
-                      onStopMonitoring={handleStopMonitoring}
-                    />
-                  </div>
+        <div className="panel-content-fixed">
+          {/* 左侧固定宽度布局：ControlPanel + WebSocketList */}
+          <div className="panel-left-section-fixed">
+            <div className="control-panel-container-fixed">
+              <div className="panel-wrapper">
+                <div className="panel-title">
+                  <h3>🎛️ Control Panel</h3>
                 </div>
-              </Panel>
-
-              <PanelResizeHandle className="panel-resize-handle horizontal" />
-
-              <Panel className="websocket-list-container">
-                <div className="panel-wrapper">
-                  <div className="panel-title">
-                    <h3>🔗 Websocket Connections</h3>
-                    {connectionsMap.size > 0 && (
-                      <button
-                        className="panel-title-btn"
-                        onClick={handleClearConnections}
-                        title="Clear all WebSocket connections and events"
-                      >
-                        🗑️ Clear All
-                      </button>
-                    )}
-                  </div>
-                  <div className="panel-body">
-                    <WebSocketList
-                      websocketEvents={websocketEvents}
-                      connectionsMap={connectionsMap}
-                      selectedConnectionId={selectedConnectionId}
-                      onSelectConnection={handleSelectConnection}
-                      onClearConnections={handleClearConnections}
-                    />
-                  </div>
+                <div className="panel-body">
+                  <ControlPanel
+                    isMonitoring={isMonitoring}
+                    onStartMonitoring={handleStartMonitoring}
+                    onStopMonitoring={handleStopMonitoring}
+                  />
                 </div>
-              </Panel>
-            </PanelGroup>
-          </Panel>
+              </div>
+            </div>
 
-          <PanelResizeHandle className="panel-resize-handle vertical" />
+            <div className="websocket-list-container-fixed">
+              <div className="panel-wrapper">
+                <div className="panel-title">
+                  <h3>🔗 Websocket Connections</h3>
+                  {connectionsMap.size > 0 && (
+                    <button
+                      className="panel-title-btn"
+                      onClick={handleClearConnections}
+                      title="Clear all WebSocket connections and events"
+                    >
+                      🗑️ Clear All
+                    </button>
+                  )}
+                </div>
+                <div className="panel-body">
+                  <WebSocketList
+                    websocketEvents={websocketEvents}
+                    connectionsMap={connectionsMap}
+                    selectedConnectionId={selectedConnectionId}
+                    onSelectConnection={handleSelectConnection}
+                    onClearConnections={handleClearConnections}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="panel-resize-handle vertical disabled" />
 
           {/* 右侧：MessageDetails */}
-          <Panel className="panel-right-section">
+          <div className="panel-right-section-fixed">
             <div className="panel-wrapper">
               <div className="panel-title">
                 <h3>💬 Message Details</h3>
@@ -430,8 +415,8 @@ const WebSocketPanel = () => {
                 />
               </div>
             </div>
-          </Panel>
-        </PanelGroup>
+          </div>
+        </div>
 
         {/* 悬浮模拟消息窗口 */}
         <FloatingSimulate

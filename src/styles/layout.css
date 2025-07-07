@@ -37,6 +37,14 @@
   height: 100%;
 }
 
+.panel-content-fixed {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  height: 100%;
+  gap: 0;
+}
+
 .panel-left {
   overflow: hidden;
   display: flex;
@@ -44,6 +52,13 @@
 }
 
 .panel-right {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-right-section-fixed {
+  flex: 1;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -74,6 +89,22 @@
 
 .panel-resize-handle:active {
   background-color: var(--accent-color);
+}
+
+/* 禁用的分隔线 */
+.panel-resize-handle.disabled {
+  cursor: default;
+  background-color: var(--border-color);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.panel-resize-handle.disabled:hover {
+  background-color: var(--border-color);
+}
+
+.panel-resize-handle.disabled::after {
+  display: none;
 }
 
 /* 分割线中间的抓手样式 */
@@ -107,6 +138,35 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+
+/* 固定宽度的左侧面板 */
+.panel-left-section-fixed {
+  width: 300px;
+  min-width: 300px;
+  max-width: 300px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.control-panel-container-fixed {
+  height: 40%;
+  min-height: 200px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--border-color);
+}
+
+.websocket-list-container-fixed {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--border-color);
 }
 
 .control-panel-container,
@@ -258,16 +318,16 @@
   .panel-header {
     padding: 8px 12px;
   }
-  
+
   .panel-header h1 {
     font-size: 16px;
   }
-  
+
   .panel-resize-handle {
     width: 4px;
   }
-  
+
   .panel-resize-handle.horizontal {
     height: 4px;
   }
-} 
+}

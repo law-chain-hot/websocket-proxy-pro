@@ -19,7 +19,7 @@ const ControlPanel = ({
   };
 
   return (
-    <div style={{ height: "100%", overflowY: "auto", padding: "16px" }}>
+    <div style={{ height: "100%", overflow: "hidden", padding: "16px" }}>
       <Stack gap="md">
         {/* Monitor Card */}
         <Card
