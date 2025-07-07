@@ -165,7 +165,6 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  border-top: 1px solid var(--border-color);
 }
 
 .control-panel-container,
@@ -176,6 +175,12 @@
   display: flex;
   flex-direction: column;
   border-top: 1px solid var(--border-color);
+}
+
+/* 移除 panel-left-section-fixed 内部容器的边框 */
+.panel-left-section-fixed .control-panel-container,
+.panel-left-section-fixed .websocket-list-container {
+  border-top: none;
 }
 
 /* 分割线方向样式 */

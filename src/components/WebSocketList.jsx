@@ -222,7 +222,6 @@ const WebSocketList = ({
         style={{
           flexShrink: 0,
           padding: "16px 16px 8px 16px",
-          borderBottom: "1px solid var(--border-color)",
           backgroundColor: "var(--bg-primary)",
         }}
       >
@@ -240,25 +239,36 @@ const WebSocketList = ({
               gap: "8px",
             }}
           >
-            <Wifi size={12} color="#9ca3af" />
-            <h3
+            <div
               style={{
-                fontSize: "11px",
+                width: 24,
+                height: 24,
+                borderRadius: 8,
+                background: "rgba(34, 197, 94, 0.2)",
+                border: "1px solid rgba(74, 222, 128, 0.3)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Wifi size={12} color="rgb(74, 222, 128)" />
+            </div>
+            <span
+              style={{
+                fontSize: "14px",
                 fontWeight: 600,
-                color: "var(--text-secondary)",
-                letterSpacing: "0.5px",
-                textTransform: "uppercase",
+                color: "rgb(229, 231, 235)",
                 margin: 0,
               }}
             >
               WebSocket Connections
-            </h3>
+            </span>
           </div>
           {connectionsMap && connectionsMap.size > 0 && (
             <button
               style={{
-                padding: "6px",
-                background: "rgba(220, 38, 38, 0.2)",
+                padding: "3px",
+                background: "transparent",
                 color: "#f87171",
                 border: "1px solid rgba(220, 38, 38, 0.3)",
                 borderRadius: "4px",
@@ -273,12 +283,9 @@ const WebSocketList = ({
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor =
                   "rgba(220, 38, 38, 0.3)";
-                e.currentTarget.style.transform = "scale(1.05)";
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor =
-                  "rgba(220, 38, 38, 0.2)";
-                e.currentTarget.style.transform = "scale(1)";
+                e.currentTarget.style.backgroundColor = "transparent";
               }}
             >
               <Trash2 size={12} />
