@@ -90,4 +90,15 @@ body {
   color: var(--text-muted);
   line-height: 1.4;
   max-width: 300px;
-} 
+}
+
+/* 动画效果 */
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}

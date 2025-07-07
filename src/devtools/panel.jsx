@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { createRoot } from "react-dom/client";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+import { MantineProvider } from "@mantine/core";
+import "@mantine/core/styles.css";
 import ControlPanel from "../components/ControlPanel.jsx";
 import WebSocketList from "../components/WebSocketList.jsx";
 import MessageDetails from "../components/MessageDetails.jsx";
@@ -12,13 +14,13 @@ const WebSocketPanel = () => {
   const [websocketEvents, setWebsocketEvents] = useState([]);
   const [selectedConnectionId, setSelectedConnectionId] = useState(null);
   const [currentTabId, setCurrentTabId] = useState(null);
-  
+
   // 分离连接管理和消息管理
   const [connectionsMap, setConnectionsMap] = useState(new Map()); // 所有连接的基础信息（包括active和inactive）
-  
+
   // 消息去重机制
   const processedMessageIds = useRef(new Set());
-  
+
   useEffect(() => {
     // 获取当前DevTools所附加的tab ID
     const tabId = chrome.devtools.inspectedWindow.tabId;
@@ -31,34 +33,50 @@ const WebSocketPanel = () => {
         const response = await chrome.runtime.sendMessage({
           type: "get-existing-data",
         });
-        
+
         if (response && response.success) {
-          console.log("📊 Loading existing data:", response.data?.length || 0, "events");
-          
+          console.log(
+            "📊 Loading existing data:",
+            response.data?.length || 0,
+            "events"
+          );
+
           // 同步监控状态
           if (response.isMonitoring !== undefined) {
             setIsMonitoring(response.isMonitoring);
             console.log("🔄 Synced monitoring state:", response.isMonitoring);
           }
-          
+
           // 加载现有事件数据
           if (response.data && response.data.length > 0) {
             // 过滤当前tab的事件
-            const tabEvents = response.data.filter(event => event.tabId === tabId);
-            console.log("📊 Filtered events for current tab:", tabEvents.length);
-            
+            const tabEvents = response.data.filter(
+              (event) => event.tabId === tabId
+            );
+            console.log(
+              "📊 Filtered events for current tab:",
+              tabEvents.length
+            );
+
             // 更新连接信息
             const newConnectionsMap = new Map();
-            tabEvents.forEach(eventData => {
-              if (eventData.type === "connection" || eventData.type === "open") {
+            tabEvents.forEach((eventData) => {
+              if (
+                eventData.type === "connection" ||
+                eventData.type === "open"
+              ) {
                 newConnectionsMap.set(eventData.id, {
                   id: eventData.id,
                   url: eventData.url,
-                  status: eventData.type === "connection" ? "connecting" : "open",
+                  status:
+                    eventData.type === "connection" ? "connecting" : "open",
                   timestamp: eventData.timestamp,
                   lastActivity: eventData.timestamp,
                 });
-              } else if (eventData.type === "close" || eventData.type === "error") {
+              } else if (
+                eventData.type === "close" ||
+                eventData.type === "error"
+              ) {
                 const existing = newConnectionsMap.get(eventData.id);
                 newConnectionsMap.set(eventData.id, {
                   id: eventData.id,
@@ -77,10 +95,16 @@ const WebSocketPanel = () => {
                 }
               }
             });
-            
+
             setConnectionsMap(newConnectionsMap);
             setWebsocketEvents(tabEvents);
-            console.log("✅ Loaded existing data:", tabEvents.length, "events,", newConnectionsMap.size, "connections");
+            console.log(
+              "✅ Loaded existing data:",
+              tabEvents.length,
+              "events,",
+              newConnectionsMap.size,
+              "connections"
+            );
           }
         }
       } catch (error) {
@@ -96,31 +120,39 @@ const WebSocketPanel = () => {
       if (message.type === "websocket-event") {
         const eventData = message.data;
         const messageId = message.messageId;
-        
+
         // Filter: only process events from current tab
         if (eventData.tabId !== tabId) {
-          sendResponse({ received: true, ignored: true, messageId, reason: "different-tab" });
+          sendResponse({
+            received: true,
+            ignored: true,
+            messageId,
+            reason: "different-tab",
+          });
           return;
         }
-        
+
         // 基于messageId的去重机制
         if (messageId && processedMessageIds.current.has(messageId)) {
-          console.log("🚫 Duplicate message detected by ID, skipping:", messageId);
+          console.log(
+            "🚫 Duplicate message detected by ID, skipping:",
+            messageId
+          );
           sendResponse({ received: true, duplicate: true, messageId });
           return;
         }
-        
+
         // Add to processed set
         if (messageId) {
           processedMessageIds.current.add(messageId);
         }
-        
+
         console.log("📊 Processing WebSocket event:", eventData);
 
         // 更新连接信息
         setConnectionsMap((prevConnections) => {
           const newConnections = new Map(prevConnections);
-          
+
           if (eventData.type === "connection" || eventData.type === "open") {
             // 创建或更新连接为active状态
             newConnections.set(eventData.id, {
@@ -130,7 +162,12 @@ const WebSocketPanel = () => {
               timestamp: eventData.timestamp,
               lastActivity: eventData.timestamp,
             });
-            console.log("📊 Created/Updated connection:", eventData.id, "Status:", eventData.type);
+            console.log(
+              "📊 Created/Updated connection:",
+              eventData.id,
+              "Status:",
+              eventData.type
+            );
           } else if (eventData.type === "close" || eventData.type === "error") {
             // 更新连接为inactive状态，如果连接不存在则创建它
             const existing = newConnections.get(eventData.id);
@@ -141,7 +178,12 @@ const WebSocketPanel = () => {
               timestamp: existing?.timestamp || eventData.timestamp,
               lastActivity: eventData.timestamp,
             });
-            console.log("📊 Updated connection to inactive:", eventData.id, "Status:", eventData.type);
+            console.log(
+              "📊 Updated connection to inactive:",
+              eventData.id,
+              "Status:",
+              eventData.type
+            );
           } else if (eventData.type === "message") {
             // 更新最后活动时间（对于消息事件）
             const existing = newConnections.get(eventData.id);
@@ -152,7 +194,7 @@ const WebSocketPanel = () => {
               });
             }
           }
-          
+
           return newConnections;
         });
 
@@ -215,7 +257,10 @@ const WebSocketPanel = () => {
   };
 
   const handleClearMessages = (connectionId) => {
-    console.log("🗑️ Clearing all messages and events for connection:", connectionId);
+    console.log(
+      "🗑️ Clearing all messages and events for connection:",
+      connectionId
+    );
     setWebsocketEvents((prevEvents) => {
       // 移除目标连接的所有事件（消息和系统事件都清除）
       return prevEvents.filter((event) => event.id !== connectionId);
@@ -263,7 +308,7 @@ const WebSocketPanel = () => {
 
         // 直接添加到事件列表中
         setWebsocketEvents((prevEvents) => [simulatedEvent, ...prevEvents]);
-        
+
         console.log("✅ Simulated message added to panel locally");
       }
 
@@ -297,102 +342,104 @@ const WebSocketPanel = () => {
   const selectedConnection = getSelectedConnectionData();
 
   return (
-    <div className="websocket-panel">
-      <div className="panel-header">
-        <h1>🔌 WebSocket Monitor</h1>
-        <div className="panel-status">
-          {isMonitoring ? (
-            <span className="status active">🟢 Monitoring Active</span>
-          ) : (
-            <span className="status inactive">🔴 Monitoring Stopped</span>
-          )}
-        </div>
-      </div>
-
-      <PanelGroup direction="horizontal" className="panel-content">
-        {/* 左侧垂直布局：ControlPanel + WebSocketList */}
-        <Panel
-          defaultSize={30}
-          minSize={20}
-          maxSize={50}
-          className="panel-left-section"
-        >
-          <PanelGroup direction="vertical">
-            <Panel
-              defaultSize={30}
-              minSize={12}
-              maxSize={40}
-              className="control-panel-container"
-            >
-              <div className="panel-wrapper">
-                <div className="panel-title">
-                  <h3>🎛️ Control Panel</h3>
-                </div>
-                <div className="panel-body">
-                  <ControlPanel
-                    isMonitoring={isMonitoring}
-                    onStartMonitoring={handleStartMonitoring}
-                    onStopMonitoring={handleStopMonitoring}
-                  />
-                </div>
-              </div>
-            </Panel>
-
-            <PanelResizeHandle className="panel-resize-handle horizontal" />
-
-            <Panel className="websocket-list-container">
-              <div className="panel-wrapper">
-                <div className="panel-title">
-                  <h3>🔗 Websocket Connections</h3>
-                  {connectionsMap.size > 0 && (
-                    <button
-                      className="panel-title-btn"
-                      onClick={handleClearConnections}
-                      title="Clear all WebSocket connections and events"
-                    >
-                      🗑️ Clear All
-                    </button>
-                  )}
-                </div>
-                <div className="panel-body">
-                  <WebSocketList
-                    websocketEvents={websocketEvents}
-                    connectionsMap={connectionsMap}
-                    selectedConnectionId={selectedConnectionId}
-                    onSelectConnection={handleSelectConnection}
-                    onClearConnections={handleClearConnections}
-                  />
-                </div>
-              </div>
-            </Panel>
-          </PanelGroup>
-        </Panel>
-
-        <PanelResizeHandle className="panel-resize-handle vertical" />
-
-        {/* 右侧：MessageDetails */}
-        <Panel className="panel-right-section">
-          <div className="panel-wrapper">
-            <div className="panel-title">
-              <h3>💬 Message Details</h3>
-            </div>
-            <div className="panel-body">
-              <MessageDetails
-                connection={selectedConnection}
-                onSimulateMessage={handleSimulateMessage}
-                onClearMessages={handleClearMessages}
-              />
-            </div>
+    <MantineProvider>
+      <div className="websocket-panel">
+        <div className="panel-header">
+          <h1>🔌 WebSocket Monitor</h1>
+          <div className="panel-status">
+            {isMonitoring ? (
+              <span className="status active">🟢 Monitoring Active</span>
+            ) : (
+              <span className="status inactive">🔴 Monitoring Stopped</span>
+            )}
           </div>
-        </Panel>
-      </PanelGroup>
+        </div>
 
-      {/* 悬浮模拟消息窗口 */}
-      <FloatingSimulate
-        connection={selectedConnection}
-        onSimulateMessage={handleSimulateMessage}
-      />
-    </div>
+        <PanelGroup direction="horizontal" className="panel-content">
+          {/* 左侧垂直布局：ControlPanel + WebSocketList */}
+          <Panel
+            defaultSize={30}
+            minSize={20}
+            maxSize={50}
+            className="panel-left-section"
+          >
+            <PanelGroup direction="vertical">
+              <Panel
+                defaultSize={30}
+                minSize={12}
+                maxSize={40}
+                className="control-panel-container"
+              >
+                <div className="panel-wrapper">
+                  <div className="panel-title">
+                    <h3>🎛️ Control Panel</h3>
+                  </div>
+                  <div className="panel-body">
+                    <ControlPanel
+                      isMonitoring={isMonitoring}
+                      onStartMonitoring={handleStartMonitoring}
+                      onStopMonitoring={handleStopMonitoring}
+                    />
+                  </div>
+                </div>
+              </Panel>
+
+              <PanelResizeHandle className="panel-resize-handle horizontal" />
+
+              <Panel className="websocket-list-container">
+                <div className="panel-wrapper">
+                  <div className="panel-title">
+                    <h3>🔗 Websocket Connections</h3>
+                    {connectionsMap.size > 0 && (
+                      <button
+                        className="panel-title-btn"
+                        onClick={handleClearConnections}
+                        title="Clear all WebSocket connections and events"
+                      >
+                        🗑️ Clear All
+                      </button>
+                    )}
+                  </div>
+                  <div className="panel-body">
+                    <WebSocketList
+                      websocketEvents={websocketEvents}
+                      connectionsMap={connectionsMap}
+                      selectedConnectionId={selectedConnectionId}
+                      onSelectConnection={handleSelectConnection}
+                      onClearConnections={handleClearConnections}
+                    />
+                  </div>
+                </div>
+              </Panel>
+            </PanelGroup>
+          </Panel>
+
+          <PanelResizeHandle className="panel-resize-handle vertical" />
+
+          {/* 右侧：MessageDetails */}
+          <Panel className="panel-right-section">
+            <div className="panel-wrapper">
+              <div className="panel-title">
+                <h3>💬 Message Details</h3>
+              </div>
+              <div className="panel-body">
+                <MessageDetails
+                  connection={selectedConnection}
+                  onSimulateMessage={handleSimulateMessage}
+                  onClearMessages={handleClearMessages}
+                />
+              </div>
+            </div>
+          </Panel>
+        </PanelGroup>
+
+        {/* 悬浮模拟消息窗口 */}
+        <FloatingSimulate
+          connection={selectedConnection}
+          onSimulateMessage={handleSimulateMessage}
+        />
+      </div>
+    </MantineProvider>
   );
 };
 
