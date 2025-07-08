@@ -36,6 +36,15 @@ const JsonViewer = ({
   const [nestedParse, setNestedParse] = useState(true);
   const [forceUpdate, setForceUpdate] = useState(0);
 
+  // 添加调试信息
+  console.log("🔍 JsonViewer render:", {
+    showControls,
+    onCopy: !!onCopy,
+    showFavoritesButton,
+    className,
+    readOnly,
+  });
+
   // Recursively parse nested JSON strings
   const parseNestedJson = useCallback((obj) => {
     if (typeof obj === "string") {
@@ -128,7 +137,50 @@ const JsonViewer = ({
     if (onCopy) {
       const copyData = getDisplayContent();
       onCopy(copyData);
+    } else {
+      // 默认的copy实现
+      const copyData = getDisplayContent();
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard
+          .writeText(copyData)
+          .then(() => {
+            console.log("📋 Text copied to clipboard via Clipboard API");
+          })
+          .catch((err) => {
+            console.error("Failed to copy via Clipboard API:", err);
+            // 降级到传统方法
+            fallbackCopyTextToClipboard(copyData);
+          });
+      } else {
+        // 降级到传统方法
+        fallbackCopyTextToClipboard(copyData);
+      }
     }
+  };
+
+  // 传统的copy方法（降级方案）
+  const fallbackCopyTextToClipboard = (text) => {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    textArea.style.left = "-999999px";
+    textArea.style.top = "-999999px";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    try {
+      const successful = document.execCommand("copy");
+      if (successful) {
+        console.log("📋 Text copied to clipboard via execCommand");
+      } else {
+        console.error("Failed to copy text via execCommand");
+      }
+    } catch (err) {
+      console.error("Failed to copy text:", err);
+    }
+
+    document.body.removeChild(textArea);
   };
 
   const handleAddToFavorites = () => {
@@ -320,42 +372,42 @@ const JsonViewer = ({
 
           <div className="json-viewer-controls-right">
             {/* Action buttons */}
-            {(onCopy || showFavoritesButton) && (
-              <div className="json-viewer-action-buttons">
-                {onCopy && (
-                  <button
-                    onClick={handleCopyClick}
-                    className={`json-viewer-btn ${
-                      isCopied
-                        ? "json-viewer-btn-active-blue"
-                        : "json-viewer-btn-inactive"
-                    }`}
-                    title="Copy"
-                  >
-                    <Copy size={14} />
-                    <span>Copy</span>
-                  </button>
-                )}
-
-                {showFavoritesButton && onAddToFavorites && (
-                  <button
-                    onClick={handleAddToFavorites}
-                    className="json-viewer-btn json-viewer-btn-inactive"
-                    title="Add to Favorites"
-                  >
-                    <Star size={14} />
-                    <span>Favorite</span>
-                  </button>
-                )}
-              </div>
-            )}
-
-            {/* Divider if we have both action buttons and status badges */}
-            {(onCopy || showFavoritesButton) &&
-              (!readOnly || (readOnly && isValidJson) || hasNestedData) && (
-                <div className="json-viewer-divider" />
+            <div className="json-viewer-action-buttons">
+              {console.log(
+                "🔍 Rendering action buttons, onCopy:",
+                !!onCopy,
+                "showFavoritesButton:",
+                showFavoritesButton
               )}
+              <button
+                onClick={handleCopyClick}
+                className={`json-viewer-btn ${
+                  isCopied
+                    ? "json-viewer-btn-active-blue"
+                    : "json-viewer-btn-inactive"
+                }`}
+                title="Copy"
+              >
+                <Copy size={14} />
+                <span>Copy</span>
+              </button>
 
+              {showFavoritesButton && onAddToFavorites && (
+                <button
+                  onClick={handleAddToFavorites}
+                  className="json-viewer-btn json-viewer-btn-inactive"
+                  title="Add to Favorites"
+                >
+                  <Star size={14} />
+                  <span>Favorite</span>
+                </button>
+              )}
+            </div>
+
+            {/* Divider if we have action buttons and status badges */}
+            {(!readOnly || (readOnly && isValidJson) || hasNestedData) && (
+              <div className="json-viewer-divider" />
+            )}
             {/* Status badges */}
             {!readOnly && (
               <div className="json-viewer-badge json-viewer-badge-yellow">
@@ -363,14 +415,12 @@ const JsonViewer = ({
                 <span>Edit</span>
               </div>
             )}
-
             {readOnly && isValidJson && (
               <div className="json-viewer-badge json-viewer-badge-green">
                 <CheckCircle size={12} />
                 <span>JSON</span>
               </div>
             )}
-
             {/* Debug info */}
             {hasNestedData && (
               <div className="json-viewer-badge json-viewer-badge-blue">

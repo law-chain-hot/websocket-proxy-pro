@@ -35,7 +35,7 @@ class FavoritesService {
   // 添加新收藏
   addFavorite(favoriteData, options = {}) {
     const {
-      name = "New Favorite",
+      name = "",
       data = "{}",
       tags = [],
       autoEdit = true,
@@ -202,7 +202,7 @@ class FavoritesService {
     }
 
     // 生成收藏名称
-    let favoriteName = "New Favorite";
+    let favoriteName = "";
     if (generateName) {
       favoriteName = this.generateFavoriteName(messageData);
     }

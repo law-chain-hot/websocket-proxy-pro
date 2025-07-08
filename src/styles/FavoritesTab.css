@@ -138,13 +138,27 @@
   transform: none;
 }
 
+.favorite-item.editing .favorite-item-content {
+  cursor: default;
+}
+
+.favorite-item.editing .favorite-item-content:hover .favorite-item-name {
+  color: var(--text-primary);
+}
+
 /* 收藏项内容 */
 .favorite-item-content {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px;
-  min-height: 60px;
+  padding: 12px 16px;
+  min-height: 40px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.favorite-item-content:hover .favorite-item-name {
+  color: var(--accent-color);
 }
 
 .favorite-item-main {
@@ -155,37 +169,32 @@
 .favorite-item-info {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
 
 .favorite-item-header {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
 .favorite-item-name {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text-primary);
   margin: 0;
   line-height: 1.2;
-}
-
-.favorite-item-name.clickable {
-  cursor: pointer;
-  transition: color 0.2s ease;
-}
-
-.favorite-item-name.clickable:hover {
-  color: var(--accent-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
 }
 
 /* 编辑状态的标题输入框 */
 .edit-title-input {
   flex: 1;
-  max-width: 300px;
+  max-width: 200px;
 }
 
 .edit-title-input input {
@@ -221,11 +230,14 @@
 }
 
 .favorite-item-preview {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--text-muted);
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas,
-    "Liberation Mono", "Courier New", monospace;
-  line-height: 1.4;
+  font-family: inherit;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 250px;
 }
 
 /* 收藏项操作按钮 */
@@ -247,6 +259,10 @@
   border: none !important;
   color: var(--text-muted) !important;
   transition: all 0.2s ease !important;
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  min-height: 32px !important;
 }
 
 .action-btn:hover {
@@ -265,10 +281,6 @@
 
 .send-btn:hover {
   color: var(--accent-color) !important;
-}
-
-.copy-btn:hover {
-  color: var(--info-color) !important;
 }
 
 .edit-btn:hover {
@@ -302,6 +314,27 @@
   border-top: 1px solid var(--border-color);
   padding: 16px;
   background: var(--bg-primary);
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.favorite-item-edit-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.favorite-item-edit-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.favorite-item-edit-content::-webkit-scrollbar-thumb {
+  background: var(--text-muted);
+  border-radius: 3px;
+  opacity: 0.5;
+}
+
+.favorite-item-edit-content::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+  opacity: 0.8;
 }
 
 .edit-json-viewer {
@@ -312,21 +345,60 @@
 }
 
 .edit-json-editor {
-  min-height: 200px;
+  min-height: 150px;
+  max-height: 260px;
 }
 
 .edit-json-editor .json-viewer-container {
-  min-height: 200px;
+  min-height: 150px;
+  max-height: 260px;
 }
 
 .edit-json-editor .cm-editor {
   background: var(--bg-secondary) !important;
-  min-height: 200px;
+  min-height: 150px;
+  max-height: 260px;
 }
 
 .edit-json-editor .cm-content {
   padding: 12px !important;
-  min-height: 176px;
+  min-height: 126px;
+  max-height: 236px;
+}
+
+/* 编辑模式下的数据编辑器容器 */
+.favorite-item-editor {
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.favorite-item-editor::-webkit-scrollbar {
+  width: 6px;
+}
+
+.favorite-item-editor::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.favorite-item-editor::-webkit-scrollbar-thumb {
+  background: var(--text-muted);
+  border-radius: 3px;
+  opacity: 0.5;
+}
+
+.favorite-item-editor::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+  opacity: 0.8;
+}
+
+.edit-data-editor {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  overflow: hidden;
+  max-height: 260px;
 }
 
 .edit-json-editor .cm-gutters {
@@ -347,6 +419,27 @@
 .favorite-item-expanded {
   border-top: 1px solid var(--border-color);
   background: var(--bg-primary);
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.favorite-item-expanded::-webkit-scrollbar {
+  width: 6px;
+}
+
+.favorite-item-expanded::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.favorite-item-expanded::-webkit-scrollbar-thumb {
+  background: var(--text-muted);
+  border-radius: 3px;
+  opacity: 0.5;
+}
+
+.favorite-item-expanded::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+  opacity: 0.8;
 }
 
 .favorite-expanded-content {
@@ -357,6 +450,7 @@
   border: 1px solid var(--border-color);
   border-radius: var(--radius);
   overflow: hidden;
+  max-height: 260px;
 }
 
 /* 表单控件样式 */
@@ -455,6 +549,14 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
+  }
+
+  .favorite-item-name {
+    max-width: none;
+  }
+
+  .favorite-item-preview {
+    max-width: none;
   }
 
   .edit-json-editor {

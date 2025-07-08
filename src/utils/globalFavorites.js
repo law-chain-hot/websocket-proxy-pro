@@ -40,8 +40,9 @@ class GlobalFavorites {
     // 决定名称
     let name = "";
     if (finalOptions.generateName) {
-      name = favoritesService.generateFavoriteName(messageData);
-      console.log("🌟 GlobalFavorites: generated name:", name);
+      // 改为默认不生成名字，让用户自己填写
+      name = "";
+      console.log("🌟 GlobalFavorites: using empty name for user to fill");
     } else {
       name = ""; // 空名字，用户需要填写
       console.log("🌟 GlobalFavorites: using empty name");

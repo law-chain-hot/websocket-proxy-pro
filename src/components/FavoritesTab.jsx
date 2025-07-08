@@ -17,7 +17,6 @@ import {
   Star,
   Trash2,
   Edit,
-  Copy,
   Search,
   X,
   Plus,
@@ -37,7 +36,6 @@ const FavoritesItem = React.memo(
     onReceive,
     onEdit,
     onDelete,
-    onCopy,
     isSelected,
     onSelect,
     isEditing,
@@ -61,28 +59,10 @@ const FavoritesItem = React.memo(
       );
     }, [favorite.updatedAt, favorite.createdAt]);
 
-    // 缓存预览文本，避免每次渲染都解析JSON
+    // 缓存预览文本，使用纯文本显示前50个字符
     const preview = useMemo(() => {
-      try {
-        const parsed = JSON.parse(favorite.data);
-        if (typeof parsed === "object" && parsed !== null) {
-          const keys = Object.keys(parsed);
-          if (keys.length > 0) {
-            return `{ ${keys.slice(0, 3).join(", ")}${
-              keys.length > 3 ? "..." : ""
-            } }`;
-          }
-        }
-        return (
-          favorite.data.substring(0, 50) +
-          (favorite.data.length > 50 ? "..." : "")
-        );
-      } catch {
-        return (
-          favorite.data.substring(0, 50) +
-          (favorite.data.length > 50 ? "..." : "")
-        );
-      }
+      const text = favorite.data.replace(/\s+/g, " ").trim();
+      return text.substring(0, 50) + (text.length > 50 ? "..." : "");
     }, [favorite.data]);
 
     // 优化：减少useCallback的依赖项，使用稳定的favorite.id
@@ -110,8 +90,15 @@ const FavoritesItem = React.memo(
     const handleMouseLeave = useCallback(() => setIsHovered(false), []);
 
     const handleSelect = useCallback(
-      () => onSelect(favorite),
-      [favorite, onSelect]
+      (e) => {
+        // 如果正在编辑模式，不允许展开/收起
+        if (isEditing) {
+          e?.stopPropagation();
+          return;
+        }
+        onSelect(favorite);
+      },
+      [favorite, onSelect, isEditing]
     );
 
     const handleReceive = useCallback(
@@ -130,14 +117,6 @@ const FavoritesItem = React.memo(
       [favorite, onSend]
     );
 
-    const handleCopy = useCallback(
-      (e) => {
-        e.stopPropagation();
-        onCopy(favoriteData);
-      },
-      [favoriteData, onCopy]
-    );
-
     const handleStartEdit = useCallback(
       (e) => {
         e.stopPropagation();
@@ -152,6 +131,22 @@ const FavoritesItem = React.memo(
         onDelete(favoriteId);
       },
       [favoriteId, onDelete]
+    );
+
+    const handleCancelEditClick = useCallback(
+      (e) => {
+        e.stopPropagation();
+        handleCancelEdit();
+      },
+      [handleCancelEdit]
+    );
+
+    const handleSaveEditClick = useCallback(
+      (e) => {
+        e.stopPropagation();
+        handleSaveEdit();
+      },
+      [handleSaveEdit]
     );
 
     // 当favorite发生变化时，更新编辑状态
@@ -182,7 +177,7 @@ const FavoritesItem = React.memo(
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
-        <div className="favorite-item-content">
+        <div className="favorite-item-content" onClick={handleSelect}>
           <div className="favorite-item-main">
             <div className="favorite-item-info">
               <div className="favorite-item-header">
@@ -198,14 +193,12 @@ const FavoritesItem = React.memo(
                   />
                 ) : (
                   <h3
-                    className="favorite-item-name clickable"
-                    onClick={handleSelect}
+                    className="favorite-item-name"
                     title="Click to expand/collapse"
                   >
-                    {favorite.name || "Unnamed Favorite"}
+                    {favorite.name || "未命名"}
                   </h3>
                 )}
-                <span className="favorite-item-time">{formattedDate}</span>
                 {favorite.tags && favorite.tags.length > 0 && (
                   <Badge
                     variant="light"
@@ -233,70 +226,61 @@ const FavoritesItem = React.memo(
               <>
                 <ActionIcon
                   variant="subtle"
-                  size="sm"
+                  size="md"
                   className="action-btn cancel-btn"
-                  onClick={handleCancelEdit}
+                  onClick={handleCancelEditClick}
                   title="Cancel"
                 >
-                  <X size={14} />
+                  <X size={16} />
                 </ActionIcon>
                 <ActionIcon
                   variant="subtle"
-                  size="sm"
+                  size="md"
                   className="action-btn save-btn"
-                  onClick={handleSaveEdit}
+                  onClick={handleSaveEditClick}
                   disabled={!editName.trim() || !editData.trim()}
                   title="Save"
                 >
-                  <Check size={14} />
+                  <Check size={16} />
                 </ActionIcon>
               </>
             ) : (
               <>
                 <ActionIcon
                   variant="subtle"
-                  size="sm"
+                  size="md"
                   className="action-btn receive-btn"
                   onClick={handleReceive}
                   title="Simulate Receive"
                 >
-                  <Download size={14} />
+                  <Download size={16} />
                 </ActionIcon>
                 <ActionIcon
                   variant="subtle"
-                  size="sm"
+                  size="md"
                   className="action-btn send-btn"
                   onClick={handleSend}
                   title="Simulate Send"
                 >
-                  <Send size={14} />
+                  <Send size={16} />
                 </ActionIcon>
                 <ActionIcon
                   variant="subtle"
-                  size="sm"
-                  className="action-btn copy-btn"
-                  onClick={handleCopy}
-                  title="Copy Content"
-                >
-                  <Copy size={14} />
-                </ActionIcon>
-                <ActionIcon
-                  variant="subtle"
-                  size="sm"
+                  size="md"
                   className="action-btn edit-btn"
                   onClick={handleStartEdit}
                   title="Edit"
                 >
-                  <Edit size={14} />
+                  <Edit size={16} />
                 </ActionIcon>
                 <ActionIcon
                   variant="subtle"
-                  size="sm"
+                  size="md"
                   className="action-btn delete-btn"
                   onClick={handleDelete}
                   title="Delete"
                 >
-                  <Trash2 size={14} />
+                  <Trash2 size={16} />
                 </ActionIcon>
               </>
             )}
@@ -310,8 +294,9 @@ const FavoritesItem = React.memo(
               data={editData}
               readOnly={false}
               onChange={handleDataChange}
-              showControls={false}
+              showControls={true}
               className="edit-data-editor"
+              showFavoritesButton={false}
             />
           </div>
         )}
@@ -323,7 +308,8 @@ const FavoritesItem = React.memo(
               data={favorite.data}
               readOnly={true}
               className="favorite-data-viewer"
-              showControls={false}
+              showControls={true}
+              showFavoritesButton={false}
             />
           </div>
         )}
@@ -342,7 +328,6 @@ const FavoritesItem = React.memo(
       prevProps.onSend === nextProps.onSend &&
       prevProps.onReceive === nextProps.onReceive &&
       prevProps.onDelete === nextProps.onDelete &&
-      prevProps.onCopy === nextProps.onCopy &&
       prevProps.onSelect === nextProps.onSelect &&
       prevProps.onStartEdit === nextProps.onStartEdit &&
       prevProps.onCancelEdit === nextProps.onCancelEdit &&
@@ -379,10 +364,6 @@ const FavoritesTab = ({ onSendMessage, onReceiveMessage, onAddFavorite }) => {
       }
     };
 
-    const handleCopyFavorite = (data) => {
-      navigator.clipboard.writeText(data);
-    };
-
     const handleSelectFavorite = (favorite) => {
       if (editingFavoriteId) return; // 如果正在编辑，不允许切换选择
       setSelectedFavoriteId(
@@ -400,7 +381,7 @@ const FavoritesTab = ({ onSendMessage, onReceiveMessage, onAddFavorite }) => {
       const editingFavorite = favorites.find((f) => f.id === editingFavoriteId);
       if (
         editingFavorite &&
-        editingFavorite.name === "New Favorite" &&
+        editingFavorite.name === "" &&
         editingFavorite.data === "{}"
       ) {
         handleDeleteFavorite(editingFavoriteId);
@@ -427,7 +408,6 @@ const FavoritesTab = ({ onSendMessage, onReceiveMessage, onAddFavorite }) => {
     return {
       handleDeleteFavorite,
       handleUseFavorite,
-      handleCopyFavorite,
       handleSelectFavorite,
       handleStartEdit,
       handleCancelEdit,
@@ -573,7 +553,6 @@ const FavoritesTab = ({ onSendMessage, onReceiveMessage, onAddFavorite }) => {
                 onSend={stableHandlers.sendHandler}
                 onReceive={stableHandlers.receiveHandler}
                 onDelete={stableHandlers.handleDeleteFavorite}
-                onCopy={stableHandlers.handleCopyFavorite}
                 isSelected={selectedFavoriteId === favorite.id}
                 onSelect={stableHandlers.handleSelectFavorite}
                 isEditing={editingFavoriteId === favorite.id}
