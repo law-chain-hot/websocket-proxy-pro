@@ -85,13 +85,16 @@ const FavoritesItem = React.memo(
       }
     }, [favorite.data]);
 
-    // 使用useCallback优化事件处理函数
+    // 优化：减少useCallback的依赖项，使用稳定的favorite.id
+    const favoriteId = favorite.id;
+    const favoriteData = favorite.data;
+
     const handleSaveEdit = useCallback(() => {
-      onSaveEdit(favorite.id, {
+      onSaveEdit(favoriteId, {
         name: editName.trim(),
         data: editData.trim(),
       });
-    }, [favorite.id, editName, editData, onSaveEdit]);
+    }, [favoriteId, editName, editData, onSaveEdit]);
 
     const handleCancelEdit = useCallback(() => {
       setEditName(favorite.name);
@@ -130,25 +133,25 @@ const FavoritesItem = React.memo(
     const handleCopy = useCallback(
       (e) => {
         e.stopPropagation();
-        onCopy(favorite.data);
+        onCopy(favoriteData);
       },
-      [favorite.data, onCopy]
+      [favoriteData, onCopy]
     );
 
     const handleStartEdit = useCallback(
       (e) => {
         e.stopPropagation();
-        onStartEdit(favorite.id);
+        onStartEdit(favoriteId);
       },
-      [favorite.id, onStartEdit]
+      [favoriteId, onStartEdit]
     );
 
     const handleDelete = useCallback(
       (e) => {
         e.stopPropagation();
-        onDelete(favorite.id);
+        onDelete(favoriteId);
       },
-      [favorite.id, onDelete]
+      [favoriteId, onDelete]
     );
 
     // 当favorite发生变化时，更新编辑状态
@@ -300,35 +303,50 @@ const FavoritesItem = React.memo(
           </div>
         </div>
 
-        {/* 编辑状态下的JSON编辑器 */}
+        {/* 编辑模式下的数据编辑器 */}
         {isEditing && (
-          <div className="favorite-item-edit-content">
-            <div className="edit-json-viewer">
-              <JsonViewer
-                data={editData}
-                className="edit-json-editor"
-                showControls={false}
-                readOnly={false}
-                onChange={handleDataChange}
-              />
-            </div>
+          <div className="favorite-item-editor">
+            <JsonViewer
+              data={editData}
+              readOnly={false}
+              onChange={handleDataChange}
+              showControls={false}
+              className="edit-data-editor"
+            />
           </div>
         )}
 
-        {/* 非编辑状态下的展开内容 */}
+        {/* 展开模式下的详细视图 */}
         {isSelected && !isEditing && (
           <div className="favorite-item-expanded">
-            <div className="favorite-expanded-content">
-              <JsonViewer
-                data={favorite.data}
-                className="favorite-json-viewer"
-                showControls={true}
-                readOnly={true}
-              />
-            </div>
+            <JsonViewer
+              data={favorite.data}
+              readOnly={true}
+              className="favorite-data-viewer"
+              showControls={false}
+            />
           </div>
         )}
       </div>
+    );
+  },
+  // 优化：添加精确的比较函数，只有关键props变化时才重渲染
+  (prevProps, nextProps) => {
+    return (
+      prevProps.favorite.id === nextProps.favorite.id &&
+      prevProps.favorite.name === nextProps.favorite.name &&
+      prevProps.favorite.data === nextProps.favorite.data &&
+      prevProps.favorite.updatedAt === nextProps.favorite.updatedAt &&
+      prevProps.isSelected === nextProps.isSelected &&
+      prevProps.isEditing === nextProps.isEditing &&
+      prevProps.onSend === nextProps.onSend &&
+      prevProps.onReceive === nextProps.onReceive &&
+      prevProps.onDelete === nextProps.onDelete &&
+      prevProps.onCopy === nextProps.onCopy &&
+      prevProps.onSelect === nextProps.onSelect &&
+      prevProps.onStartEdit === nextProps.onStartEdit &&
+      prevProps.onCancelEdit === nextProps.onCancelEdit &&
+      prevProps.onSaveEdit === nextProps.onSaveEdit
     );
   }
 );
@@ -338,6 +356,92 @@ const FavoritesTab = ({ onSendMessage, onReceiveMessage, onAddFavorite }) => {
   const [searchText, setSearchText] = useState("");
   const [selectedFavoriteId, setSelectedFavoriteId] = useState(null);
   const [editingFavoriteId, setEditingFavoriteId] = useState(null);
+
+  // 优化：缓存稳定的事件处理函数，避免每次渲染都重新创建
+  const stableHandlers = useMemo(() => {
+    const handleDeleteFavorite = (id) => {
+      const success = favoritesService.deleteFavorite(id);
+      if (success) {
+        if (selectedFavoriteId === id) {
+          setSelectedFavoriteId(null);
+        }
+        if (editingFavoriteId === id) {
+          setEditingFavoriteId(null);
+        }
+      }
+    };
+
+    const handleUseFavorite = (favorite, type) => {
+      if (type === "send" && onSendMessage) {
+        onSendMessage(favorite.data);
+      } else if (type === "receive" && onReceiveMessage) {
+        onReceiveMessage(favorite.data);
+      }
+    };
+
+    const handleCopyFavorite = (data) => {
+      navigator.clipboard.writeText(data);
+    };
+
+    const handleSelectFavorite = (favorite) => {
+      if (editingFavoriteId) return; // 如果正在编辑，不允许切换选择
+      setSelectedFavoriteId(
+        selectedFavoriteId === favorite.id ? null : favorite.id
+      );
+    };
+
+    const handleStartEdit = (id) => {
+      setEditingFavoriteId(id);
+      setSelectedFavoriteId(null);
+    };
+
+    const handleCancelEdit = () => {
+      // 如果是新添加的项目且没有保存，则删除它
+      const editingFavorite = favorites.find((f) => f.id === editingFavoriteId);
+      if (
+        editingFavorite &&
+        editingFavorite.name === "New Favorite" &&
+        editingFavorite.data === "{}"
+      ) {
+        handleDeleteFavorite(editingFavoriteId);
+      }
+      setEditingFavoriteId(null);
+    };
+
+    const handleSaveEdit = (id, updates) => {
+      if (!updates.name.trim() || !updates.data.trim()) return;
+
+      const success = favoritesService.updateFavorite(id, {
+        name: updates.name,
+        data: updates.data,
+      });
+
+      if (success) {
+        setEditingFavoriteId(null);
+      }
+    };
+
+    const sendHandler = (fav) => handleUseFavorite(fav, "send");
+    const receiveHandler = (fav) => handleUseFavorite(fav, "receive");
+
+    return {
+      handleDeleteFavorite,
+      handleUseFavorite,
+      handleCopyFavorite,
+      handleSelectFavorite,
+      handleStartEdit,
+      handleCancelEdit,
+      handleSaveEdit,
+      sendHandler,
+      receiveHandler,
+    };
+  }, [
+    onSendMessage,
+    onReceiveMessage,
+    selectedFavoriteId,
+    editingFavoriteId,
+    favorites,
+  ]);
 
   // 从 favoritesService 加载收藏夹
   useEffect(() => {
@@ -394,80 +498,9 @@ const FavoritesTab = ({ onSendMessage, onReceiveMessage, onAddFavorite }) => {
     }
   }, []);
 
-  const handleDeleteFavorite = useCallback(
-    (id) => {
-      const success = favoritesService.deleteFavorite(id);
-      if (success) {
-        if (selectedFavoriteId === id) {
-          setSelectedFavoriteId(null);
-        }
-        if (editingFavoriteId === id) {
-          setEditingFavoriteId(null);
-        }
-      }
-    },
-    [selectedFavoriteId, editingFavoriteId]
-  );
-
-  const handleUseFavorite = useCallback(
-    (favorite, type) => {
-      if (type === "send" && onSendMessage) {
-        onSendMessage(favorite.data);
-      } else if (type === "receive" && onReceiveMessage) {
-        onReceiveMessage(favorite.data);
-      }
-    },
-    [onSendMessage, onReceiveMessage]
-  );
-
-  const handleCopyFavorite = useCallback((data) => {
-    navigator.clipboard.writeText(data);
-  }, []);
-
-  const handleSelectFavorite = useCallback(
-    (favorite) => {
-      if (editingFavoriteId) return; // 如果正在编辑，不允许切换选择
-      setSelectedFavoriteId(
-        selectedFavoriteId === favorite.id ? null : favorite.id
-      );
-    },
-    [editingFavoriteId, selectedFavoriteId]
-  );
-
-  const handleStartEdit = useCallback((id) => {
-    setEditingFavoriteId(id);
-    setSelectedFavoriteId(null);
-  }, []);
-
-  const handleCancelEdit = useCallback(() => {
-    // 如果是新添加的项目且没有保存，则删除它
-    const editingFavorite = favorites.find((f) => f.id === editingFavoriteId);
-    if (
-      editingFavorite &&
-      editingFavorite.name === "New Favorite" &&
-      editingFavorite.data === "{}"
-    ) {
-      handleDeleteFavorite(editingFavoriteId);
-    }
-    setEditingFavoriteId(null);
-  }, [favorites, editingFavoriteId, handleDeleteFavorite]);
-
-  const handleSaveEdit = useCallback((id, updates) => {
-    if (!updates.name.trim() || !updates.data.trim()) return;
-
-    const success = favoritesService.updateFavorite(id, {
-      name: updates.name,
-      data: updates.data,
-    });
-
-    if (success) {
-      setEditingFavoriteId(null);
-    }
-  }, []);
-
   const clearSearch = useCallback(() => setSearchText(""), []);
 
-  // 使用useMemo缓存过滤结果，避免每次渲染都重新计算
+  // 优化：使用useMemo缓存过滤结果，并添加依赖项优化
   const filteredFavorites = useMemo(() => {
     if (!searchText.trim()) return favorites;
     const searchLower = searchText.toLowerCase();
@@ -477,16 +510,6 @@ const FavoritesTab = ({ onSendMessage, onReceiveMessage, onAddFavorite }) => {
         favorite.data.toLowerCase().includes(searchLower)
     );
   }, [favorites, searchText]);
-
-  // 优化子组件的props，避免每次都创建新函数
-  const sendHandler = useCallback(
-    (fav) => handleUseFavorite(fav, "send"),
-    [handleUseFavorite]
-  );
-  const receiveHandler = useCallback(
-    (fav) => handleUseFavorite(fav, "receive"),
-    [handleUseFavorite]
-  );
 
   return (
     <div className="favorites-tab">
@@ -547,16 +570,16 @@ const FavoritesTab = ({ onSendMessage, onReceiveMessage, onAddFavorite }) => {
               <FavoritesItem
                 key={favorite.id}
                 favorite={favorite}
-                onSend={sendHandler}
-                onReceive={receiveHandler}
-                onDelete={handleDeleteFavorite}
-                onCopy={handleCopyFavorite}
+                onSend={stableHandlers.sendHandler}
+                onReceive={stableHandlers.receiveHandler}
+                onDelete={stableHandlers.handleDeleteFavorite}
+                onCopy={stableHandlers.handleCopyFavorite}
                 isSelected={selectedFavoriteId === favorite.id}
-                onSelect={handleSelectFavorite}
+                onSelect={stableHandlers.handleSelectFavorite}
                 isEditing={editingFavoriteId === favorite.id}
-                onStartEdit={handleStartEdit}
-                onCancelEdit={handleCancelEdit}
-                onSaveEdit={handleSaveEdit}
+                onStartEdit={stableHandlers.handleStartEdit}
+                onCancelEdit={stableHandlers.handleCancelEdit}
+                onSaveEdit={stableHandlers.handleSaveEdit}
               />
             ))}
           </div>

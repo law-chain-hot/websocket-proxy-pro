@@ -4,6 +4,9 @@ class FavoritesService {
     this.storageKey = "websocket-favorites";
     this.listeners = new Set();
     this.notificationTimeoutId = null;
+    // 新增：批量更新防抖，减少频繁触发
+    this.batchUpdateTimeoutId = null;
+    this.pendingUpdates = [];
   }
 
   // 获取所有收藏
@@ -71,7 +74,7 @@ class FavoritesService {
     const newFavorites = [newFavorite, ...currentFavorites];
 
     if (this.saveFavorites(newFavorites)) {
-      // 防抖通知，避免频繁触发
+      // 优化：使用更长的防抖延迟，减少频繁通知
       console.log(
         "⭐ FavoritesService: Notifying listeners with autoEdit:",
         autoEdit
@@ -159,7 +162,7 @@ class FavoritesService {
     return () => this.listeners.delete(listener);
   }
 
-  // 防抖通知所有监听器
+  // 优化：增加防抖延迟，减少频繁通知
   debouncedNotify(favorites, eventData = {}) {
     if (this.notificationTimeoutId) {
       clearTimeout(this.notificationTimeoutId);
@@ -167,7 +170,7 @@ class FavoritesService {
 
     this.notificationTimeoutId = setTimeout(() => {
       this.notifyListeners(favorites, eventData);
-    }, 50); // 50ms 防抖
+    }, 100); // 增加到100ms防抖，减少频繁通知
   }
 
   // 通知所有监听器
@@ -198,15 +201,15 @@ class FavoritesService {
       return existingFavorite;
     }
 
-    // 自动生成名称
-    let name = "New Favorite";
+    // 生成收藏名称
+    let favoriteName = "New Favorite";
     if (generateName) {
-      name = this.generateFavoriteName(messageData);
+      favoriteName = this.generateFavoriteName(messageData);
     }
 
     return this.addFavorite(
       {
-        name,
+        name: favoriteName,
         data: messageData,
       },
       {
@@ -216,46 +219,58 @@ class FavoritesService {
     );
   }
 
-  // 生成收藏名称的辅助方法
+  // 生成收藏名称
   generateFavoriteName(messageData) {
     try {
       const parsed = JSON.parse(messageData);
-      if (typeof parsed === "object" && parsed !== null) {
-        // 尝试从对象中提取有意义的名称
-        const keys = Object.keys(parsed);
-        if (keys.includes("type") && parsed.type) {
-          return `${parsed.type} Message`;
-        } else if (keys.includes("action") && parsed.action) {
-          return `${parsed.action} Action`;
-        } else if (keys.includes("event") && parsed.event) {
-          return `${parsed.event} Event`;
-        } else if (keys.includes("method") && parsed.method) {
-          return `${parsed.method} Method`;
-        } else if (keys.includes("command") && parsed.command) {
-          return `${parsed.command} Command`;
-        } else if (keys.length > 0) {
-          return `${keys[0]} Message`;
-        }
+
+      // 尝试从常见字段生成名称
+      if (parsed.type) {
+        return `${parsed.type} Message`;
       }
-    } catch {
-      // 如果不是JSON，使用前几个字符作为名称
-      const preview = messageData.substring(0, 30);
-      return preview.length < messageData.length ? `${preview}...` : preview;
+      if (parsed.action) {
+        return `${parsed.action} Action`;
+      }
+      if (parsed.event) {
+        return `${parsed.event} Event`;
+      }
+      if (parsed.command) {
+        return `${parsed.command} Command`;
+      }
+      if (parsed.message) {
+        const msg = String(parsed.message).substring(0, 20);
+        return `Message: ${msg}${msg.length >= 20 ? "..." : ""}`;
+      }
+
+      // 使用第一个属性名
+      const keys = Object.keys(parsed);
+      if (keys.length > 0) {
+        return `${keys[0]} Data`;
+      }
+    } catch (error) {
+      // 如果不是JSON，使用文本内容的前20个字符
+      const text = String(messageData).substring(0, 20).trim();
+      if (text) {
+        return `Message: ${text}${messageData.length > 20 ? "..." : ""}`;
+      }
     }
-    return "New Favorite";
+
+    return "WebSocket Message";
   }
 
-  // 清理方法，用于组件卸载时调用
+  // 清理资源
   cleanup() {
     if (this.notificationTimeoutId) {
       clearTimeout(this.notificationTimeoutId);
-      this.notificationTimeoutId = null;
+    }
+    if (this.batchUpdateTimeoutId) {
+      clearTimeout(this.batchUpdateTimeoutId);
     }
     this.listeners.clear();
   }
 }
 
-// 创建单例实例
+// 创建单例
 const favoritesService = new FavoritesService();
 
 export default favoritesService;

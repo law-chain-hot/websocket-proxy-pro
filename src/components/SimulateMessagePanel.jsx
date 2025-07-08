@@ -29,8 +29,10 @@ const SimulateMessagePanel = forwardRef(
     const [windowSize, setWindowSize] = useState({ width: 400, height: 500 });
     const [activeTab, setActiveTab] = useState("editor");
     const [addFavoriteCallback, setAddFavoriteCallback] = useState(null);
+    const [isDragging, setIsDragging] = useState(false);
     const windowRef = useRef(null);
     const saveTimeoutRef = useRef(null);
+    const listenersRef = useRef(null);
 
     // 使用窗口约束 hook
     const { maxSize, validateAndFixPositionAndSize } = useWindowConstraints();
@@ -78,11 +80,14 @@ const SimulateMessagePanel = forwardRef(
       }, 300); // 300ms 防抖
     }, []);
 
-    // 合并的事件监听器，避免重复监听
+    // 优化：只在组件挂载时设置监听器，避免重复创建
     useEffect(() => {
       // 监听收藏夹服务事件和tab切换
       const unsubscribeFavorites = globalFavorites.addListener(
         (favorites, eventData) => {
+          // 拖动期间忽略收藏夹变化，避免干扰
+          if (isDragging) return;
+
           if (eventData?.type === "add" && eventData?.switchToFavoritesTab) {
             setActiveTab("favorites");
           }
@@ -90,17 +95,26 @@ const SimulateMessagePanel = forwardRef(
       );
 
       const unsubscribeTabSwitch = globalFavorites.addTabSwitchCallback(() => {
+        // 拖动期间忽略tab切换请求
+        if (isDragging) return;
         setActiveTab("favorites");
       });
 
-      return () => {
+      // 缓存监听器取消函数
+      listenersRef.current = () => {
         unsubscribeFavorites();
         unsubscribeTabSwitch();
+      };
+
+      return () => {
+        if (listenersRef.current) {
+          listenersRef.current();
+        }
         if (saveTimeoutRef.current) {
           clearTimeout(saveTimeoutRef.current);
         }
       };
-    }, []);
+    }, []); // 移除isDragging依赖，避免重复创建监听器
 
     // Load saved state from localStorage (只在组件挂载时执行一次)
     useEffect(() => {
@@ -125,10 +139,10 @@ const SimulateMessagePanel = forwardRef(
       }
     }, []); // 空依赖数组，只在挂载时执行一次
 
-    // 使用防抖保存状态
+    // 优化：拖动期间暂停localStorage保存
     useEffect(() => {
-      // 在动画期间忽略位置变化，避免保存临时位置
-      if (isAnimating) return;
+      // 在动画期间或拖动期间忽略位置变化，避免保存临时位置
+      if (isAnimating || isDragging) return;
 
       const stateToSave = {
         message: simulateMessage,
@@ -143,6 +157,7 @@ const SimulateMessagePanel = forwardRef(
       windowPosition,
       windowSize,
       isAnimating,
+      isDragging, // 添加isDragging依赖
       debouncedSave,
     ]);
 
@@ -271,8 +286,15 @@ const SimulateMessagePanel = forwardRef(
       setIsPinned(!isPinned);
     };
 
+    // 优化：添加拖动开始和结束处理
+    const handleDragStart = useCallback(() => {
+      setIsDragging(true);
+    }, []);
+
     const handleDragStop = useCallback((e, data) => {
       setWindowPosition({ x: data.x, y: data.y });
+      // 延迟重置拖动状态，确保状态更新完成
+      setTimeout(() => setIsDragging(false), 50);
     }, []);
 
     const handleResizeStop = useCallback(
@@ -296,6 +318,16 @@ const SimulateMessagePanel = forwardRef(
       [simulateMessage, isSending]
     );
 
+    // 优化：使用useMemo缓存FavoritesTab props，避免不必要的重渲染
+    const favoritesTabProps = useMemo(
+      () => ({
+        onSendMessage: (data) => handleSimulateMessage("outgoing", data),
+        onReceiveMessage: (data) => handleSimulateMessage("incoming", data),
+        onAddFavorite: (callback) => setAddFavoriteCallback(() => callback),
+      }),
+      [handleSimulateMessage]
+    );
+
     return (
       <>
         {/* Floating toggle button - 只在panel关闭时显示 */}
@@ -316,6 +348,7 @@ const SimulateMessagePanel = forwardRef(
           <Rnd
             size={windowSize}
             position={windowPosition}
+            onDragStart={handleDragStart}
             onDragStop={handleDragStop}
             onResizeStop={handleResizeStop}
             minWidth={300}
@@ -437,17 +470,7 @@ const SimulateMessagePanel = forwardRef(
                     </Tabs.Panel>
 
                     <Tabs.Panel value="favorites">
-                      <FavoritesTab
-                        onSendMessage={(data) =>
-                          handleSimulateMessage("outgoing", data)
-                        }
-                        onReceiveMessage={(data) =>
-                          handleSimulateMessage("incoming", data)
-                        }
-                        onAddFavorite={(callback) =>
-                          setAddFavoriteCallback(() => callback)
-                        }
-                      />
+                      <FavoritesTab {...favoritesTabProps} />
                     </Tabs.Panel>
 
                     <Tabs.Panel value="system">
