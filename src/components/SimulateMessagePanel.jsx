@@ -181,15 +181,17 @@ const SimulateMessagePanel = forwardRef(
     return (
       <>
         {/* Floating toggle button */}
-        <div
-          className={`floating-simulate-button ${isWindowOpen ? "open" : ""}`}
-          onClick={toggleWindow}
-        >
-          <div className="simulate-icon">{isWindowOpen ? "─" : "🎭"}</div>
-          <div className="simulate-tooltip">
-            {isWindowOpen ? "Minimize Simulate" : "Open Simulate"}
+        {!isWindowOpen && (
+          <div
+            className={`floating-simulate-button ${isWindowOpen ? "open" : ""}`}
+            onClick={toggleWindow}
+          >
+            <div className="simulate-icon">{isWindowOpen ? "─" : "🎭"}</div>
+            <div className="simulate-tooltip">
+              {isWindowOpen ? "Minimize Simulate" : "Open Simulate"}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Draggable and resizable window */}
         {isWindowOpen && (
