@@ -12,6 +12,7 @@ import {
   Edit,
   CheckCircle,
   SquareStack,
+  Star,
 } from "lucide-react";
 import "../styles/JsonViewer.css";
 
@@ -27,6 +28,8 @@ const JsonViewer = ({
   onChange = null,
   enableWrap = true,
   enableNestedParse = true,
+  onAddToFavorites = null,
+  showFavoritesButton = false,
 }) => {
   const [textWrap, setTextWrap] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
@@ -125,6 +128,13 @@ const JsonViewer = ({
     if (onCopy) {
       const copyData = getDisplayContent();
       onCopy(copyData);
+    }
+  };
+
+  const handleAddToFavorites = () => {
+    if (onAddToFavorites) {
+      const favoriteData = getDisplayContent();
+      onAddToFavorites(favoriteData);
     }
   };
 
@@ -306,28 +316,47 @@ const JsonViewer = ({
                 <span>Nested Parse</span>
               </button>
             )}
-
-            {onCopy && (
-              <>
-                <div className="json-viewer-divider" />
-                <button
-                  onClick={handleCopyClick}
-                  className={`json-viewer-btn ${
-                    isCopied
-                      ? "json-viewer-btn-active-blue"
-                      : "json-viewer-btn-inactive"
-                  }`}
-                  title="Copy"
-                >
-                  <Copy size={14} />
-                  <span>Copy</span>
-                </button>
-              </>
-            )}
           </div>
 
           <div className="json-viewer-controls-right">
-            {/* Status badges on the right */}
+            {/* Action buttons */}
+            {(onCopy || showFavoritesButton) && (
+              <div className="json-viewer-action-buttons">
+                {onCopy && (
+                  <button
+                    onClick={handleCopyClick}
+                    className={`json-viewer-btn ${
+                      isCopied
+                        ? "json-viewer-btn-active-blue"
+                        : "json-viewer-btn-inactive"
+                    }`}
+                    title="Copy"
+                  >
+                    <Copy size={14} />
+                    <span>Copy</span>
+                  </button>
+                )}
+
+                {showFavoritesButton && onAddToFavorites && (
+                  <button
+                    onClick={handleAddToFavorites}
+                    className="json-viewer-btn json-viewer-btn-inactive"
+                    title="Add to Favorites"
+                  >
+                    <Star size={14} />
+                    <span>Favorite</span>
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Divider if we have both action buttons and status badges */}
+            {(onCopy || showFavoritesButton) &&
+              (!readOnly || (readOnly && isValidJson) || hasNestedData) && (
+                <div className="json-viewer-divider" />
+              )}
+
+            {/* Status badges */}
             {!readOnly && (
               <div className="json-viewer-badge json-viewer-badge-yellow">
                 <Edit size={12} />

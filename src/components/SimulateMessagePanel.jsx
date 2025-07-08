@@ -4,6 +4,8 @@ import React, {
   useRef,
   useImperativeHandle,
   forwardRef,
+  useCallback,
+  useMemo,
 } from "react";
 import { Rnd } from "react-rnd";
 import { Tabs } from "@mantine/core";
@@ -12,6 +14,8 @@ import useWindowConstraints from "../hooks/useWindowConstraints";
 import useAutoResize from "../hooks/useAutoResize";
 import useWindowAnimation from "../hooks/useWindowAnimation";
 import usePanelManager from "../hooks/usePanelManager";
+import FavoritesTab from "./FavoritesTab";
+import globalFavorites, { addFromEditor } from "../utils/globalFavorites";
 
 const SimulateMessagePanel = forwardRef(
   ({ connection, onSimulateMessage }, ref) => {
@@ -23,7 +27,10 @@ const SimulateMessagePanel = forwardRef(
     const [isPinned, setIsPinned] = useState(false);
     const [windowPosition, setWindowPosition] = useState({ x: 0, y: 0 });
     const [windowSize, setWindowSize] = useState({ width: 400, height: 500 });
+    const [activeTab, setActiveTab] = useState("editor");
+    const [addFavoriteCallback, setAddFavoriteCallback] = useState(null);
     const windowRef = useRef(null);
+    const saveTimeoutRef = useRef(null);
 
     // 使用窗口约束 hook
     const { maxSize, validateAndFixPositionAndSize } = useWindowConstraints();
@@ -54,7 +61,48 @@ const SimulateMessagePanel = forwardRef(
       setWindowSize,
     });
 
-    // Load saved state from localStorage
+    // 防抖保存到 localStorage
+    const debouncedSave = useCallback((stateToSave) => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+      saveTimeoutRef.current = setTimeout(() => {
+        try {
+          localStorage.setItem(
+            "simulateMessagePanel",
+            JSON.stringify(stateToSave)
+          );
+        } catch (error) {
+          console.error("Failed to save state:", error);
+        }
+      }, 300); // 300ms 防抖
+    }, []);
+
+    // 合并的事件监听器，避免重复监听
+    useEffect(() => {
+      // 监听收藏夹服务事件和tab切换
+      const unsubscribeFavorites = globalFavorites.addListener(
+        (favorites, eventData) => {
+          if (eventData?.type === "add" && eventData?.switchToFavoritesTab) {
+            setActiveTab("favorites");
+          }
+        }
+      );
+
+      const unsubscribeTabSwitch = globalFavorites.addTabSwitchCallback(() => {
+        setActiveTab("favorites");
+      });
+
+      return () => {
+        unsubscribeFavorites();
+        unsubscribeTabSwitch();
+        if (saveTimeoutRef.current) {
+          clearTimeout(saveTimeoutRef.current);
+        }
+      };
+    }, []);
+
+    // Load saved state from localStorage (只在组件挂载时执行一次)
     useEffect(() => {
       const savedState = localStorage.getItem("simulateMessagePanel");
       if (savedState) {
@@ -73,12 +121,11 @@ const SimulateMessagePanel = forwardRef(
           console.error("Failed to load saved state:", error);
         }
       } else {
-        // Default position
         setWindowPosition({ x: window.innerWidth - 420, y: 100 });
       }
-    }, []);
+    }, []); // 空依赖数组，只在挂载时执行一次
 
-    // Save state to localStorage whenever relevant state changes
+    // 使用防抖保存状态
     useEffect(() => {
       // 在动画期间忽略位置变化，避免保存临时位置
       if (isAnimating) return;
@@ -89,15 +136,22 @@ const SimulateMessagePanel = forwardRef(
         position: windowPosition,
         size: windowSize,
       };
-      localStorage.setItem("simulateMessagePanel", JSON.stringify(stateToSave));
-    }, [simulateMessage, isPinned, windowPosition, windowSize, isAnimating]);
+      debouncedSave(stateToSave);
+    }, [
+      simulateMessage,
+      isPinned,
+      windowPosition,
+      windowSize,
+      isAnimating,
+      debouncedSave,
+    ]);
 
-    // Handle click outside to close (only when not pinned)
+    // Handle click outside to close (只有在窗口打开时才添加监听器)
     useEffect(() => {
+      if (!isWindowOpen || isPinned) return;
+
       const handleClickOutside = (event) => {
         if (
-          isWindowOpen &&
-          !isPinned &&
           windowRef.current &&
           !windowRef.current.contains(event.target) &&
           !event.target.closest(".floating-simulate-button")
@@ -106,52 +160,74 @@ const SimulateMessagePanel = forwardRef(
         }
       };
 
-      if (isWindowOpen) {
-        document.addEventListener("mousedown", handleClickOutside);
-        return () =>
-          document.removeEventListener("mousedown", handleClickOutside);
-      }
+      document.addEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
     }, [isWindowOpen, isPinned]);
 
-    // Handle simulate message with direction parameter
-    const handleSimulateMessage = async (direction) => {
-      if (!connection || !simulateMessage.trim() || isSending) {
-        return;
-      }
+    // 使用 useCallback 优化函数引用
+    const handleSimulateMessage = useCallback(
+      async (direction, data = null) => {
+        const messageData = data || simulateMessage;
 
-      setIsSending(true);
+        if (!connection || !messageData.trim() || isSending) {
+          return;
+        }
 
-      try {
-        await onSimulateMessage({
-          connectionId: connection.id,
-          message: simulateMessage,
-          direction: direction,
+        setIsSending(true);
+
+        try {
+          await onSimulateMessage({
+            connectionId: connection.id,
+            message: messageData,
+            direction: direction,
+          });
+        } catch (error) {
+          console.error("Failed to simulate message:", error);
+        } finally {
+          setTimeout(() => setIsSending(false), 200);
+        }
+      },
+      [connection, simulateMessage, isSending, onSimulateMessage]
+    );
+
+    const handleMessageChange = useCallback(
+      (value) => {
+        console.log("📨 SimulateMessagePanel handleMessageChange:", {
+          valueLength: value.length,
+          currentMessageLength: simulateMessage.length,
+          valuePreview:
+            value.substring(0, 100) + (value.length > 100 ? "..." : ""),
+          changed: value !== simulateMessage,
         });
-      } catch (error) {
-        console.error("Failed to simulate message:", error);
-      } finally {
-        setTimeout(() => setIsSending(false), 200);
-      }
-    };
+        setSimulateMessage(value);
+      },
+      [simulateMessage]
+    );
 
-    const handleMessageChange = (value) => {
-      console.log("📨 SimulateMessagePanel handleMessageChange:", {
-        valueLength: value.length,
-        currentMessageLength: simulateMessage.length,
-        valuePreview:
-          value.substring(0, 100) + (value.length > 100 ? "..." : ""),
-        changed: value !== simulateMessage,
-      });
-      setSimulateMessage(value);
-    };
+    const handleKeyPress = useCallback(
+      (e) => {
+        if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+          e.preventDefault();
+          handleSimulateMessage("incoming");
+        }
+      },
+      [handleSimulateMessage]
+    );
 
-    const handleKeyPress = (e) => {
-      if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-        e.preventDefault();
-        // Default to incoming on Ctrl+Enter
-        handleSimulateMessage("incoming");
-      }
-    };
+    const handleAddToFavorites = useCallback(
+      (data = null) => {
+        const messageData = data || simulateMessage;
+        if (!messageData.trim()) return;
+
+        const newFavorite = addFromEditor(messageData.trim());
+
+        if (newFavorite) {
+          console.log("Added to favorites:", newFavorite.name);
+        }
+      },
+      [simulateMessage]
+    );
 
     const clearMessage = () => {
       setSimulateMessage("");
@@ -159,28 +235,70 @@ const SimulateMessagePanel = forwardRef(
 
     // 暴露openPanel函数给外部使用
     useImperativeHandle(ref, () => ({
-      openPanel,
+      openPanel: (options = {}) => {
+        console.log(
+          "🎭 SimulateMessagePanel openPanel called with options:",
+          options
+        );
+        openPanel();
+
+        // 如果指定了tab，切换到对应tab
+        if (options.tab) {
+          setActiveTab(options.tab);
+
+          // 如果指定了数据且要切换到favorites tab，延迟添加到收藏夹
+          if (options.tab === "favorites" && options.data) {
+            // 使用setTimeout确保tab切换完成后再添加收藏
+            setTimeout(() => {
+              console.log(
+                "🎭 Adding data to favorites:",
+                options.data.substring(0, 100) + "..."
+              );
+              const newFavorite = addFromEditor(options.data, {
+                switchToFavoritesTab: false, // 不再次切换tab，因为我们已经切换了
+                generateName: false, // 生成空名字供用户编辑
+                autoEdit: true, // 自动进入编辑状态
+                showNotification: false, // 不显示通知
+              });
+              console.log("🎭 New favorite created:", newFavorite);
+            }, 100);
+          }
+        }
+      },
     }));
 
     const togglePin = () => {
       setIsPinned(!isPinned);
     };
 
-    const handleDragStop = (e, data) => {
+    const handleDragStop = useCallback((e, data) => {
       setWindowPosition({ x: data.x, y: data.y });
-    };
+    }, []);
 
-    const handleResizeStop = (e, direction, ref, delta, position) => {
-      setWindowSize({
-        width: ref.style.width,
-        height: ref.style.height,
-      });
-      setWindowPosition(position);
-    };
+    const handleResizeStop = useCallback(
+      (e, direction, ref, delta, position) => {
+        setWindowSize({
+          width: ref.style.width,
+          height: ref.style.height,
+        });
+        setWindowPosition(position);
+      },
+      []
+    );
+
+    // 优化按钮状态计算
+    const isAddFavoriteDisabled = useMemo(
+      () => !simulateMessage.trim(),
+      [simulateMessage]
+    );
+    const isSimulateDisabled = useMemo(
+      () => !simulateMessage.trim() || isSending,
+      [simulateMessage, isSending]
+    );
 
     return (
       <>
-        {/* Floating toggle button */}
+        {/* Floating toggle button - 只在panel关闭时显示 */}
         {!isWindowOpen && (
           <div
             className={`floating-simulate-button ${isWindowOpen ? "open" : ""}`}
@@ -258,7 +376,8 @@ const SimulateMessagePanel = forwardRef(
                 ) : (
                   <Tabs
                     variant="pills"
-                    defaultValue="editor"
+                    value={activeTab}
+                    onChange={setActiveTab}
                     orientation="horizontal"
                   >
                     <Tabs.List>
@@ -280,6 +399,8 @@ const SimulateMessagePanel = forwardRef(
                               onChange={handleMessageChange}
                               showControls={true}
                               className="simulate-editor"
+                              showFavoritesButton={true}
+                              onAddToFavorites={handleAddToFavorites}
                             />
                           </div>
                         </div>
@@ -287,9 +408,17 @@ const SimulateMessagePanel = forwardRef(
                         <div className="simulate-actions">
                           <div className="simulate-buttons">
                             <button
+                              className="simulate-btn add-favorite"
+                              onClick={handleAddToFavorites}
+                              disabled={isAddFavoriteDisabled}
+                              title="Add to Favorites"
+                            >
+                              ⭐ Add to Favorites
+                            </button>
+                            <button
                               className="simulate-btn incoming"
                               onClick={() => handleSimulateMessage("incoming")}
-                              disabled={!simulateMessage.trim() || isSending}
+                              disabled={isSimulateDisabled}
                             >
                               {isSending
                                 ? "⏳ Sending..."
@@ -298,7 +427,7 @@ const SimulateMessagePanel = forwardRef(
                             <button
                               className="simulate-btn outgoing"
                               onClick={() => handleSimulateMessage("outgoing")}
-                              disabled={!simulateMessage.trim() || isSending}
+                              disabled={isSimulateDisabled}
                             >
                               {isSending ? "⏳ Sending..." : "📤 Simulate Send"}
                             </button>
@@ -308,25 +437,17 @@ const SimulateMessagePanel = forwardRef(
                     </Tabs.Panel>
 
                     <Tabs.Panel value="favorites">
-                      <div className="tab-content-placeholder">
-                        <div className="placeholder-icon">⭐</div>
-                        <h4>Message Templates</h4>
-                        <p>Save and reuse your WebSocket messages</p>
-                        <div className="feature-list">
-                          <div className="feature-item">
-                            <span className="feature-dot"></span>
-                            <span>Save frequently used messages</span>
-                          </div>
-                          <div className="feature-item">
-                            <span className="feature-dot"></span>
-                            <span>Quick access to message history</span>
-                          </div>
-                          <div className="feature-item">
-                            <span className="feature-dot"></span>
-                            <span>Organize message library</span>
-                          </div>
-                        </div>
-                      </div>
+                      <FavoritesTab
+                        onSendMessage={(data) =>
+                          handleSimulateMessage("outgoing", data)
+                        }
+                        onReceiveMessage={(data) =>
+                          handleSimulateMessage("incoming", data)
+                        }
+                        onAddFavorite={(callback) =>
+                          setAddFavoriteCallback(() => callback)
+                        }
+                      />
                     </Tabs.Panel>
 
                     <Tabs.Panel value="system">

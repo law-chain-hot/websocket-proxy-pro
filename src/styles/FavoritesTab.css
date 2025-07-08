@@ -1,0 +1,500 @@
+/* FavoritesTab.css */
+
+.favorites-tab {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* 控制区域 */
+.favorites-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+}
+
+.search-container {
+  flex: 1;
+}
+
+.search-input input {
+  background: var(--bg-primary) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+.search-input input:focus {
+  border-color: var(--accent-color) !important;
+  box-shadow: 0 0 0 2px var(--accent-transparent-color) !important;
+}
+
+.add-favorite-btn {
+  background: var(--accent-color) !important;
+  color: white !important;
+  border: none !important;
+  flex-shrink: 0;
+}
+
+.add-favorite-btn:hover {
+  background: var(--accent-hover-color) !important;
+}
+
+/* 收藏列表区域 */
+.favorites-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.favorites-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.favorites-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.favorites-list::-webkit-scrollbar-thumb {
+  background: var(--text-muted);
+  border-radius: 3px;
+  opacity: 0.5;
+}
+
+.favorites-list::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+  opacity: 0.8;
+}
+
+/* 空状态 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.empty-icon {
+  margin-bottom: 16px;
+  opacity: 0.3;
+}
+
+.empty-text {
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  color: var(--text-primary) !important;
+  margin-bottom: 8px !important;
+}
+
+.empty-description {
+  font-size: 14px !important;
+  color: var(--text-muted) !important;
+}
+
+/* 收藏项列表 */
+.favorites-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* 单个收藏项 */
+.favorite-item {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.favorite-item:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--accent-color);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.favorite-item.selected {
+  border-color: var(--accent-color);
+  background: var(--bg-tertiary);
+}
+
+.favorite-item.editing {
+  border-color: var(--warning-color);
+  background: var(--bg-tertiary);
+  cursor: default;
+}
+
+.favorite-item.editing:hover {
+  transform: none;
+}
+
+/* 收藏项内容 */
+.favorite-item-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  min-height: 60px;
+}
+
+.favorite-item-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.favorite-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.favorite-item-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.favorite-item-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.favorite-item-name.clickable {
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.favorite-item-name.clickable:hover {
+  color: var(--accent-color);
+}
+
+/* 编辑状态的标题输入框 */
+.edit-title-input {
+  flex: 1;
+  max-width: 300px;
+}
+
+.edit-title-input input {
+  background: var(--bg-primary) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  padding: 8px 12px !important;
+}
+
+.edit-title-input input:focus {
+  border-color: var(--accent-color) !important;
+  box-shadow: 0 0 0 2px var(--accent-transparent-color) !important;
+}
+
+.favorite-item-time {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.favorite-item-tag {
+  background: var(--accent-transparent-color) !important;
+  color: var(--accent-color) !important;
+  border: none !important;
+}
+
+.favorite-item-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.favorite-item-preview {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+  line-height: 1.4;
+}
+
+/* 收藏项操作按钮 */
+.favorite-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  flex-shrink: 0;
+}
+
+.favorite-item-actions.visible {
+  opacity: 1;
+}
+
+.action-btn {
+  background: transparent !important;
+  border: none !important;
+  color: var(--text-muted) !important;
+  transition: all 0.2s ease !important;
+}
+
+.action-btn:hover {
+  background: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+.action-btn:disabled {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+}
+
+.receive-btn:hover {
+  color: var(--success-color) !important;
+}
+
+.send-btn:hover {
+  color: var(--accent-color) !important;
+}
+
+.copy-btn:hover {
+  color: var(--info-color) !important;
+}
+
+.edit-btn:hover {
+  color: var(--warning-color) !important;
+}
+
+.delete-btn:hover {
+  color: var(--error-color) !important;
+}
+
+.save-btn {
+  color: var(--success-color) !important;
+}
+
+.save-btn:hover {
+  background: var(--success-transparent-color) !important;
+  color: var(--success-color) !important;
+}
+
+.cancel-btn {
+  color: var(--error-color) !important;
+}
+
+.cancel-btn:hover {
+  background: var(--error-transparent-color) !important;
+  color: var(--error-color) !important;
+}
+
+/* 编辑状态下的JSON编辑器 */
+.favorite-item-edit-content {
+  border-top: 1px solid var(--border-color);
+  padding: 16px;
+  background: var(--bg-primary);
+}
+
+.edit-json-viewer {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--bg-secondary);
+}
+
+.edit-json-editor {
+  min-height: 200px;
+}
+
+.edit-json-editor .json-viewer-container {
+  min-height: 200px;
+}
+
+.edit-json-editor .cm-editor {
+  background: var(--bg-secondary) !important;
+  min-height: 200px;
+}
+
+.edit-json-editor .cm-content {
+  padding: 12px !important;
+  min-height: 176px;
+}
+
+.edit-json-editor .cm-gutters {
+  background: var(--bg-tertiary) !important;
+  border-right: 1px solid var(--border-color) !important;
+}
+
+.edit-json-editor .cm-focused {
+  outline: none;
+}
+
+.edit-json-editor .cm-editor.cm-focused {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent-transparent-color);
+}
+
+/* 展开的内容区域 */
+.favorite-item-expanded {
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-primary);
+}
+
+.favorite-expanded-content {
+  padding: 16px;
+}
+
+.favorite-json-viewer {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+/* 表单控件样式 */
+.mantine-TextInput-label {
+  color: var(--text-primary) !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  margin-bottom: 8px !important;
+}
+
+.mantine-TextInput-input {
+  background: var(--bg-primary) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: var(--radius) !important;
+  color: var(--text-primary) !important;
+  font-size: 14px !important;
+}
+
+.mantine-TextInput-input:focus {
+  border-color: var(--accent-color) !important;
+  box-shadow: 0 0 0 2px var(--accent-transparent-color) !important;
+}
+
+.mantine-TextInput-input::placeholder {
+  color: var(--text-muted) !important;
+}
+
+/* 按钮样式 */
+.mantine-Button-root {
+  background: var(--accent-color) !important;
+  border: none !important;
+  color: white !important;
+}
+
+.mantine-Button-root:hover {
+  background: var(--accent-hover-color) !important;
+}
+
+.mantine-Button-root[data-variant="default"] {
+  background: var(--bg-tertiary) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+.mantine-Button-root[data-variant="default"]:hover {
+  background: var(--bg-primary) !important;
+}
+
+/* 动画效果 */
+@keyframes expandDown {
+  from {
+    max-height: 0;
+    opacity: 0;
+  }
+  to {
+    max-height: 400px;
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.favorite-item {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .favorites-tab {
+    padding: 12px;
+  }
+
+  .favorites-controls {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .search-container {
+    width: 100%;
+  }
+
+  .favorite-item-content {
+    padding: 12px;
+  }
+
+  .favorite-item-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .edit-json-editor {
+    min-height: 150px;
+  }
+
+  .edit-json-editor .json-viewer-container {
+    min-height: 150px;
+  }
+
+  .edit-json-editor .cm-editor {
+    min-height: 150px;
+  }
+
+  .edit-json-editor .cm-content {
+    min-height: 126px;
+  }
+}
+
+/* 焦点状态 */
+.favorite-item:focus-within {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
+/* 选中状态特殊样式 */
+.favorite-item.selected .favorite-item-name {
+  color: var(--accent-color);
+}
+
+.favorite-item.selected .favorite-item-actions {
+  opacity: 1;
+}
+
+/* 编辑状态下禁用悬停效果 */
+.favorite-item.editing .favorite-item-actions {
+  opacity: 1;
+}
+
+/* 悬停状态优化 */
+.favorite-item:not(.editing):hover .favorite-item-actions {
+  opacity: 1;
+}

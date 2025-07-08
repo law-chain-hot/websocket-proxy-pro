@@ -20,6 +20,9 @@ const WebSocketPanel = () => {
   // 消息去重机制
   const processedMessageIds = useRef(new Set());
 
+  // FloatingSimulate组件的ref
+  const floatingSimulateRef = useRef(null);
+
   useEffect(() => {
     // 获取当前DevTools所附加的tab ID
     const tabId = chrome.devtools.inspectedWindow.tabId;
@@ -338,6 +341,21 @@ const WebSocketPanel = () => {
     };
   };
 
+  // 处理打开SimulateMessagePanel
+  const handleOpenSimulatePanel = (options = {}) => {
+    console.log(
+      "🎯 Panel: handleOpenSimulatePanel called with options:",
+      options
+    );
+
+    if (floatingSimulateRef.current) {
+      console.log("🎯 Panel: FloatingSimulate ref found, calling openPanel");
+      floatingSimulateRef.current.openPanel(options);
+    } else {
+      console.warn("🎯 Panel: FloatingSimulate ref not found");
+    }
+  };
+
   const selectedConnection = getSelectedConnectionData();
 
   return (
@@ -397,6 +415,7 @@ const WebSocketPanel = () => {
                   connection={selectedConnection}
                   onSimulateMessage={handleSimulateMessage}
                   onClearMessages={handleClearMessages}
+                  onOpenSimulatePanel={handleOpenSimulatePanel}
                 />
               </div>
             </div>
@@ -405,6 +424,7 @@ const WebSocketPanel = () => {
 
         {/* 悬浮模拟消息窗口 */}
         <FloatingSimulate
+          ref={floatingSimulateRef}
           connection={selectedConnection}
           onSimulateMessage={handleSimulateMessage}
         />

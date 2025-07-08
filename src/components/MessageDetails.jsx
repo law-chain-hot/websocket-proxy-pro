@@ -3,36 +3,60 @@ import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { filterMessages } from "../utils/filterUtils";
 import JsonViewer from "./JsonViewer";
 import useNewMessageHighlight from "../hooks/useNewMessageHighlight";
+import { addFromMessageList } from "../utils/globalFavorites";
 
 // SVG图标组件
 const Icons = {
   ArrowUp: () => (
     <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-      <path d="M6 2L10 6H8V10H4V6H2L6 2Z" fill="currentColor"/>
+      <path d="M6 2L10 6H8V10H4V6H2L6 2Z" fill="currentColor" />
     </svg>
   ),
   ArrowDown: () => (
     <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-      <path d="M6 10L2 6H4V2H8V6H10L6 10Z" fill="currentColor"/>
+      <path d="M6 10L2 6H4V2H8V6H10L6 10Z" fill="currentColor" />
     </svg>
   ),
   Connection: () => (
     <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-      <path d="M10 6C10 8.209 8.209 10 6 10C3.791 10 2 8.209 2 6C2 3.791 3.791 2 6 2C8.209 2 10 3.791 10 6Z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-      <path d="M6 4V8M4 6H8" stroke="currentColor" strokeWidth="1"/>
+      <path
+        d="M10 6C10 8.209 8.209 10 6 10C3.791 10 2 8.209 2 6C2 3.791 3.791 2 6 2C8.209 2 10 3.791 10 6Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        fill="none"
+      />
+      <path d="M6 4V8M4 6H8" stroke="currentColor" strokeWidth="1" />
     </svg>
   ),
   Simulate: () => (
     <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
-      <path d="M6 1L7.5 4H10.5L8.25 6L9 9L6 7.5L3 9L3.75 6L1.5 4H4.5L6 1Z" fill="currentColor"/>
+      <path
+        d="M6 1L7.5 4H10.5L8.25 6L9 9L6 7.5L3 9L3.75 6L1.5 4H4.5L6 1Z"
+        fill="currentColor"
+      />
     </svg>
   ),
   Block: () => (
     <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
-      <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-      <path d="M3 3L9 9" stroke="currentColor" strokeWidth="1.5"/>
+      <circle
+        cx="6"
+        cy="6"
+        r="5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        fill="none"
+      />
+      <path d="M3 3L9 9" stroke="currentColor" strokeWidth="1.5" />
     </svg>
-  )
+  ),
+  Star: () => (
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+      <path
+        d="M6 1L7.5 4H10.5L8.25 6L9 9L6 7.5L3 9L3.75 6L1.5 4H4.5L6 1Z"
+        fill="currentColor"
+      />
+    </svg>
+  ),
 };
 
 const MessageDetails = ({
@@ -40,6 +64,7 @@ const MessageDetails = ({
   isIntercepting,
   onSimulateMessage,
   onClearMessages,
+  onOpenSimulatePanel,
 }) => {
   const [viewMode, setViewMode] = useState("formatted"); // 'formatted' | 'raw'
   const [filterDirection, setFilterDirection] = useState("all"); // 'all' | 'outgoing' | 'incoming'
@@ -49,9 +74,13 @@ const MessageDetails = ({
   const [copiedMessageKey, setCopiedMessageKey] = useState(null); // 已拷贝的消息key
   const [typeFilter, setTypeFilter] = useState("all"); // 'all' | 'message' | 'event'
   const [sortOrder, setSortOrder] = useState("desc"); // 'asc' | 'desc' 时间排序
-  
+  const [hoveredMessageKey, setHoveredMessageKey] = useState(null); // 悬停的消息key
+
   // Use new message highlight hook
-  const { isNewMessage, clearHighlights } = useNewMessageHighlight(connection, 500);
+  const { isNewMessage, clearHighlights } = useNewMessageHighlight(
+    connection,
+    500
+  );
 
   const formatTimestamp = (timestamp) => {
     const date = new Date(timestamp);
@@ -89,15 +118,17 @@ const MessageDetails = ({
 
   // 排序消息
   const sortedMessages = [...filteredMessages].sort((a, b) => {
-    return sortOrder === "desc" 
-      ? b.timestamp - a.timestamp 
+    return sortOrder === "desc"
+      ? b.timestamp - a.timestamp
       : a.timestamp - b.timestamp;
   });
 
   // formatMessage 函数已移动到 JsonViewer 组件内部处理
 
   const handleMessageClick = (messageKey) => {
-    setSelectedMessageKey(selectedMessageKey === messageKey ? null : messageKey);
+    setSelectedMessageKey(
+      selectedMessageKey === messageKey ? null : messageKey
+    );
   };
 
   const handleSortToggle = () => {
@@ -147,6 +178,46 @@ const MessageDetails = ({
     }
   };
 
+  // 添加消息到收藏夹
+  const handleAddToFavorites = (message) => {
+    if (!message || !message.data) {
+      console.warn("Cannot add to favorites: message data is empty");
+      return;
+    }
+
+    // 使用全局收藏功能从消息列表添加
+    const newFavorite = addFromMessageList(message.data);
+
+    if (newFavorite) {
+      console.log("Message added to favorites:", newFavorite.name);
+      // 可以在这里显示一个toast通知
+    }
+  };
+
+  // 从JsonViewer添加到收藏夹（打开Simulate面板的favorites tab）
+  const handleAddToFavoritesFromViewer = (data) => {
+    console.log(
+      "📋 MessageDetails: Add to favorites clicked with data:",
+      data?.substring(0, 100) + "..."
+    );
+
+    if (!data || !data.trim()) {
+      console.warn("Cannot add to favorites: data is empty");
+      return;
+    }
+
+    // 打开SimulateMessagePanel的favorites tab，并创建新收藏
+    if (onOpenSimulatePanel) {
+      console.log("📋 MessageDetails: Calling onOpenSimulatePanel");
+      onOpenSimulatePanel({
+        tab: "favorites",
+        data: data,
+      });
+    } else {
+      console.warn("📋 MessageDetails: onOpenSimulatePanel not available");
+    }
+  };
+
   const handleClearSearchFilter = () => {
     setFilterText("");
     setFilterInvert(false);
@@ -170,10 +241,14 @@ const MessageDetails = ({
   const renderDataCell = (message) => {
     const isSystemMessage = message.type !== "message";
     const tags = [];
-    
+
     if (message.simulated) {
       tags.push(
-        <span key="simulated" className="message-tag simulated" title="Simulated message">
+        <span
+          key="simulated"
+          className="message-tag simulated"
+          title="Simulated message"
+        >
           <Icons.Simulate />
           <span>Simulate</span>
         </span>
@@ -181,7 +256,11 @@ const MessageDetails = ({
     }
     if (message.blocked) {
       tags.push(
-        <span key="blocked" className="message-tag blocked" title={message.reason || "Message was blocked"}>
+        <span
+          key="blocked"
+          className="message-tag blocked"
+          title={message.reason || "Message was blocked"}
+        >
           <Icons.Block />
           <span>Block</span>
         </span>
@@ -193,10 +272,13 @@ const MessageDetails = ({
         <div className="data-cell system">
           <Icons.Connection className="system-icon" />
           <span className="system-text">
-            {message.type === "open" ? "Request served by " + (message.data || "WebSocket") : 
-             message.type === "close" ? "Disconnected from " + (message.url || "WebSocket") : 
-             message.type === "error" ? "Connection error" : 
-             message.type}
+            {message.type === "open"
+              ? "Request served by " + (message.data || "WebSocket")
+              : message.type === "close"
+              ? "Disconnected from " + (message.url || "WebSocket")
+              : message.type === "error"
+              ? "Connection error"
+              : message.type}
           </span>
           {tags.length > 0 && <span className="message-tags">{tags}</span>}
         </div>
@@ -206,12 +288,14 @@ const MessageDetails = ({
     return (
       <div className="data-cell">
         <span className={`direction-arrow ${message.direction}`}>
-          {message.direction === "outgoing" ? <Icons.ArrowUp /> : <Icons.ArrowDown />}
+          {message.direction === "outgoing" ? (
+            <Icons.ArrowUp />
+          ) : (
+            <Icons.ArrowDown />
+          )}
         </span>
         {tags.length > 0 && <span className="message-tags">{tags}</span>}
-        <span className="message-text">
-          {truncateMessage(message.data)}
-        </span>
+        <span className="message-text">{truncateMessage(message.data)}</span>
       </div>
     );
   };
@@ -223,7 +307,10 @@ const MessageDetails = ({
         <div className="controls">
           <div className="control-row">
             <div className="filter-controls primary-filter">
-              <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
+              <select
+                value={typeFilter}
+                onChange={(e) => setTypeFilter(e.target.value)}
+              >
                 <option value="all">All</option>
                 <option value="message">Messages</option>
                 <option value="event">Events</option>
@@ -240,7 +327,10 @@ const MessageDetails = ({
                   placeholder="Filter using regex (example: (web)?socket)"
                 />
                 {filterText && (
-                  <button className="clear-filter-btn" onClick={handleClearSearchFilter}>
+                  <button
+                    className="clear-filter-btn"
+                    onClick={handleClearSearchFilter}
+                  >
                     ✕
                   </button>
                 )}
@@ -250,7 +340,10 @@ const MessageDetails = ({
             <div className="secondary-controls">
               <div className="filter-controls direction-filter">
                 <label>Direction:</label>
-                <select value={filterDirection} onChange={(e) => setFilterDirection(e.target.value)}>
+                <select
+                  value={filterDirection}
+                  onChange={(e) => setFilterDirection(e.target.value)}
+                >
                   <option value="all">All</option>
                   <option value="outgoing">↑</option>
                   <option value="incoming">↓</option>
@@ -259,7 +352,10 @@ const MessageDetails = ({
 
               <div className="filter-controls view-filter">
                 <label>View:</label>
-                <select value={viewMode} onChange={(e) => setViewMode(e.target.value)}>
+                <select
+                  value={viewMode}
+                  onChange={(e) => setViewMode(e.target.value)}
+                >
                   <option value="formatted">JSON</option>
                   <option value="raw">Raw</option>
                 </select>
@@ -278,7 +374,11 @@ const MessageDetails = ({
               <button
                 className="clear-messages-btn"
                 onClick={handleClearMessagesList}
-                disabled={!connection || !connection.messages || connection.messages.length === 0}
+                disabled={
+                  !connection ||
+                  !connection.messages ||
+                  connection.messages.length === 0
+                }
                 title="Clear all messages"
               >
                 🗑️
@@ -302,7 +402,11 @@ const MessageDetails = ({
                     <tr>
                       <th className="col-data">Data</th>
                       <th className="col-length">Length</th>
-                      <th className="col-time" onClick={handleSortToggle} style={{ cursor: 'pointer' }}>
+                      <th
+                        className="col-time"
+                        onClick={handleSortToggle}
+                        style={{ cursor: "pointer" }}
+                      >
                         Time {sortOrder === "desc" ? "▼" : "▲"}
                       </th>
                     </tr>
@@ -312,6 +416,7 @@ const MessageDetails = ({
                       const messageKey = `${message.timestamp}-${message.direction}`;
                       const isSelected = selectedMessageKey === messageKey;
                       const isNewMsg = isNewMessage(messageKey);
+                      const isHovered = hoveredMessageKey === messageKey;
                       return (
                         <tr
                           key={`${messageKey}-${index}`} // 保持React key的唯一性
@@ -319,11 +424,29 @@ const MessageDetails = ({
                             message.simulated ? "simulated" : ""
                           } ${message.blocked ? "blocked" : ""} ${
                             isSelected ? "selected" : ""
-                          } ${isNewMsg ? "new-message" : ""}`}
+                          } ${isNewMsg ? "new-message" : ""} ${
+                            isHovered ? "hovered" : ""
+                          }`}
                           onClick={() => handleMessageClick(messageKey)}
+                          onMouseEnter={() => setHoveredMessageKey(messageKey)}
+                          onMouseLeave={() => setHoveredMessageKey(null)}
                         >
                           <td className="col-data">
-                            {renderDataCell(message)}
+                            <div className="data-cell-wrapper">
+                              {renderDataCell(message)}
+                              {isHovered && message.type === "message" && (
+                                <button
+                                  className="favorite-btn"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleAddToFavorites(message);
+                                  }}
+                                  title="Add to favorites"
+                                >
+                                  <Icons.Star />
+                                </button>
+                              )}
+                            </div>
                           </td>
                           <td className="col-length">
                             {getMessageLength(message)}
@@ -338,7 +461,7 @@ const MessageDetails = ({
                 </table>
               </div>
             </Panel>
-            
+
             {selectedMessageKey && (
               <>
                 <PanelResizeHandle className="panel-resize-handle horizontal message-detail-resize-handle" />
@@ -348,7 +471,7 @@ const MessageDetails = ({
                       {(() => {
                         const selectedMessage = getSelectedMessage();
                         if (!selectedMessage) return null;
-                        
+
                         const messageKey = selectedMessageKey;
                         return (
                           // <div className="detail-body">
@@ -365,21 +488,30 @@ const MessageDetails = ({
                               data={selectedMessage.data}
                               className="compact"
                               showControls={true}
-                              onCopy={(data) => handleCopyMessage(data, messageKey)}
+                              onCopy={(data) =>
+                                handleCopyMessage(data, messageKey)
+                              }
                               copyButtonText="📋 Copy"
                               copiedText="✓ Copied"
                               isCopied={copiedMessageKey === messageKey}
+                              showFavoritesButton={true}
+                              onAddToFavorites={handleAddToFavoritesFromViewer}
                             />
                             {isIntercepting && (
                               <div className="intercept-actions">
-                                <button className="action-btn edit">Edit</button>
-                                <button className="action-btn allow">Allow</button>
-                                <button className="action-btn block">Block</button>
+                                <button className="action-btn edit">
+                                  Edit
+                                </button>
+                                <button className="action-btn allow">
+                                  Allow
+                                </button>
+                                <button className="action-btn block">
+                                  Block
+                                </button>
                               </div>
                             )}
-                          {/* </div> */}
+                            {/* </div> */}
                           </>
-
                         );
                       })()}
                     </div>

@@ -559,6 +559,50 @@
   color: var(--text-primary);
 }
 
+/* 数据单元格包装器 */
+.data-cell-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  position: relative;
+}
+
+/* 收藏按钮 */
+.favorite-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 8px;
+  transition: all 0.2s ease;
+  min-width: 20px;
+  height: 20px;
+  opacity: 0.7;
+}
+
+.favorite-btn:hover {
+  color: #fbbf24;
+  background-color: rgba(251, 191, 36, 0.1);
+  transform: scale(1.1);
+  opacity: 1;
+}
+
+.favorite-btn:active {
+  transform: scale(0.95);
+}
+
+/* 确保数据单元格有足够的空间 */
+.data-cell-wrapper .data-cell {
+  flex: 1;
+  min-width: 0; /* 允许文本截断 */
+}
+
 /* 简洁详情面板 */
 .message-detail-simple {
   background-color: var(--bg-secondary);

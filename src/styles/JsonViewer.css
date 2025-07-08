@@ -33,6 +33,13 @@
   gap: 6px;
 }
 
+/* Action buttons container */
+.json-viewer-action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
 /* 按钮样式 */
 .json-viewer-btn {
   display: flex;

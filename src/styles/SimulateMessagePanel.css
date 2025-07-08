@@ -292,6 +292,17 @@
   background-color: #0056b3;
 }
 
+.simulate-btn.add-favorite {
+  background-color: #f59e0b;
+  color: white;
+  border: 1px solid #f59e0b;
+}
+
+.simulate-btn.add-favorite:hover:not(:disabled) {
+  background-color: #d97706;
+  border-color: #d97706;
+}
+
 /* System Window Styles - Added for react-rnd integration */
 
 /* Floating simulate button */
@@ -309,7 +320,7 @@
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 1000;
+  z-index: 1100;
   user-select: none;
   border: none;
 }

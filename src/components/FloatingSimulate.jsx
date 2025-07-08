@@ -7,9 +7,9 @@ const FloatingSimulate = forwardRef(
 
     // 暴露openPanel函数给外部使用
     useImperativeHandle(ref, () => ({
-      openPanel: () => {
+      openPanel: (options = {}) => {
         if (simulatePanelRef.current) {
-          simulatePanelRef.current.openPanel();
+          simulatePanelRef.current.openPanel(options);
         }
       },
     }));
