@@ -85,6 +85,19 @@
   color: #3b82f6;
 }
 
+.json-viewer-btn-disabled {
+  background: rgba(55, 65, 81, 0.2) !important;
+  border-color: rgba(75, 85, 99, 0.2) !important;
+  color: #6b7280 !important;
+  cursor: not-allowed !important;
+  opacity: 0.6;
+}
+
+.json-viewer-btn-disabled:hover {
+  background: rgba(55, 65, 81, 0.2) !important;
+  border-color: rgba(75, 85, 99, 0.2) !important;
+}
+
 .json-viewer-divider {
   width: 1px;
   height: 18px;
@@ -114,6 +127,11 @@
 .json-viewer-badge-yellow {
   border-color: rgba(217, 119, 6, 0.4);
   color: #f59e0b;
+}
+
+.json-viewer-badge-blue {
+  border-color: rgba(37, 99, 235, 0.4);
+  color: #3b82f6;
 }
 
 .json-viewer-status {
@@ -232,7 +250,6 @@
 /* 紧凑的 JSON 查看器（用于详情面板）*/
 .json-viewer.compact .json-viewer-controls {
   padding: 6px 8px;
-
 }
 
 .json-viewer.compact .json-viewer-wrap-control {

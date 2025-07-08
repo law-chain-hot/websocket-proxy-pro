@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import CodeMirror from "@uiw/react-codemirror";
 import { json } from "@codemirror/lang-json";
 import { oneDark } from "@codemirror/theme-one-dark";
@@ -31,6 +31,7 @@ const JsonViewer = ({
   const [textWrap, setTextWrap] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [nestedParse, setNestedParse] = useState(true);
+  const [forceUpdate, setForceUpdate] = useState(0);
 
   // Recursively parse nested JSON strings
   const parseNestedJson = useCallback((obj) => {
@@ -55,35 +56,59 @@ const JsonViewer = ({
   }, []);
 
   // Detect and parse JSON
-  const { isValidJson, parsedData, displayData, nestedParsedData } =
-    useMemo(() => {
-      if (!data || typeof data !== "string") {
-        return {
-          isValidJson: false,
-          parsedData: null,
-          displayData: String(data || ""),
-          nestedParsedData: null,
-        };
-      }
+  const {
+    isValidJson,
+    parsedData,
+    displayData,
+    nestedParsedData,
+    hasNestedData,
+  } = useMemo(() => {
+    console.log(
+      "🔍 JsonViewer: Recalculating data for:",
+      data?.substring(0, 100) + "..."
+    );
 
-      try {
-        const parsed = JSON.parse(data);
-        const nestedParsed = parseNestedJson(parsed);
-        return {
-          isValidJson: true,
-          parsedData: parsed,
-          displayData: data,
-          nestedParsedData: nestedParsed,
-        };
-      } catch {
-        return {
-          isValidJson: false,
-          parsedData: null,
-          displayData: data,
-          nestedParsedData: null,
-        };
-      }
-    }, [data, parseNestedJson]);
+    if (!data || typeof data !== "string") {
+      return {
+        isValidJson: false,
+        parsedData: null,
+        displayData: String(data || ""),
+        nestedParsedData: null,
+        hasNestedData: false,
+      };
+    }
+
+    try {
+      const parsed = JSON.parse(data);
+      const nestedParsed = parseNestedJson(parsed);
+
+      // Check if nested parsing actually found nested JSON
+      const hasNestedData =
+        JSON.stringify(parsed) !== JSON.stringify(nestedParsed);
+
+      console.log("🔍 JsonViewer: Parsed data", {
+        hasNestedData,
+        parsedDataLength: JSON.stringify(parsed).length,
+        nestedParsedDataLength: JSON.stringify(nestedParsed).length,
+      });
+
+      return {
+        isValidJson: true,
+        parsedData: parsed,
+        displayData: data,
+        nestedParsedData: nestedParsed,
+        hasNestedData,
+      };
+    } catch {
+      return {
+        isValidJson: false,
+        parsedData: null,
+        displayData: data,
+        nestedParsedData: null,
+        hasNestedData: false,
+      };
+    }
+  }, [data, parseNestedJson, forceUpdate]);
 
   // Get display content
   const getDisplayContent = () => {
@@ -131,6 +156,14 @@ const JsonViewer = ({
   // Handle formatting changes in edit mode
   const handleFormatChange = useCallback(
     (newCollapsed, newNestedParse) => {
+      console.log("🔄 JsonViewer: handleFormatChange called", {
+        newCollapsed,
+        newNestedParse,
+        readOnly,
+        hasOnChange: !!onChange,
+        isValidJson,
+      });
+
       if (!readOnly && onChange && isValidJson) {
         try {
           const jsonData = newNestedParse ? nestedParsedData : parsedData;
@@ -139,6 +172,7 @@ const JsonViewer = ({
             null,
             newCollapsed ? 0 : 2
           );
+          console.log("🔄 JsonViewer: Calling onChange with formatted content");
           onChange(formattedContent);
         } catch (error) {
           console.error("Error formatting JSON:", error);
@@ -158,13 +192,31 @@ const JsonViewer = ({
   );
 
   const handleNestedParseChange = useCallback(
-    (e) => {
-      const newNestedParse = e.target.checked;
+    (newNestedParse) => {
+      console.log("🔄 JsonViewer: handleNestedParseChange called", {
+        newNestedParse,
+        currentNestedParse: nestedParse,
+        hasNestedData,
+      });
+
       setNestedParse(newNestedParse);
       handleFormatChange(collapsed, newNestedParse);
+
+      // Force a re-render to ensure UI updates
+      setForceUpdate((prev) => prev + 1);
     },
-    [handleFormatChange, collapsed]
+    [handleFormatChange, collapsed, nestedParse, hasNestedData]
   );
+
+  // Reset nestedParse when data changes and has no nested data
+  useEffect(() => {
+    if (isValidJson && !hasNestedData && nestedParse) {
+      console.log(
+        "🔄 JsonViewer: Auto-disabling nested parse (no nested data found)"
+      );
+      setNestedParse(false);
+    }
+  }, [isValidJson, hasNestedData, nestedParse]);
 
   const content = getDisplayContent();
 
@@ -232,38 +284,23 @@ const JsonViewer = ({
               </button>
             )}
 
-            {/* {enableCompact && (
-              <button
-                onClick={() => {
-                  const newCollapsed = !collapsed;
-                  setCollapsed(newCollapsed);
-                  handleFormatChange(newCollapsed, nestedParse);
-                }}
-                className={`json-viewer-btn ${
-                  collapsed
-                    ? "json-viewer-btn-active-orange"
-                    : "json-viewer-btn-inactive"
-                }`}
-                title="Compact"
-              >
-                <Minimize2 size={14} />
-                <span>Compact</span>
-              </button>
-            )} */}
-
             {enableNestedParse && (
               <button
                 onClick={() => {
                   const newNestedParse = !nestedParse;
-                  setNestedParse(newNestedParse);
-                  handleFormatChange(collapsed, newNestedParse);
+                  handleNestedParseChange(newNestedParse);
                 }}
                 className={`json-viewer-btn ${
                   nestedParse
                     ? "json-viewer-btn-active-purple"
                     : "json-viewer-btn-inactive"
-                }`}
-                title="Nested Parse JSON"
+                } ${!hasNestedData ? "json-viewer-btn-disabled" : ""}`}
+                title={
+                  hasNestedData
+                    ? "Nested Parse JSON"
+                    : "No nested JSON data found"
+                }
+                disabled={!hasNestedData}
               >
                 <SquareStack size={14} />
                 <span>Nested Parse</span>
@@ -302,6 +339,14 @@ const JsonViewer = ({
               <div className="json-viewer-badge json-viewer-badge-green">
                 <CheckCircle size={12} />
                 <span>JSON</span>
+              </div>
+            )}
+
+            {/* Debug info */}
+            {hasNestedData && (
+              <div className="json-viewer-badge json-viewer-badge-blue">
+                <Hash size={12} />
+                <span>Nested</span>
               </div>
             )}
           </div>
