@@ -26,7 +26,6 @@ const JsonViewer = ({
   readOnly = true,
   onChange = null,
   enableWrap = true,
-  enableCompact = true,
   enableNestedParse = true,
 }) => {
   const [textWrap, setTextWrap] = useState(false);
@@ -112,7 +111,11 @@ const JsonViewer = ({
             // Try to parse and apply nested parsing
             const parsed = JSON.parse(value);
             const nestedParsed = parseNestedJson(parsed);
-            const formattedContent = JSON.stringify(nestedParsed, null, collapsed ? 0 : 2);
+            const formattedContent = JSON.stringify(
+              nestedParsed,
+              null,
+              collapsed ? 0 : 2
+            );
             onChange(formattedContent);
             return;
           } catch (error) {
@@ -229,7 +232,7 @@ const JsonViewer = ({
               </button>
             )}
 
-            {isValidJson && enableCompact && (
+            {/* {enableCompact && (
               <button
                 onClick={() => {
                   const newCollapsed = !collapsed;
@@ -246,9 +249,9 @@ const JsonViewer = ({
                 <Minimize2 size={14} />
                 <span>Compact</span>
               </button>
-            )}
+            )} */}
 
-            {isValidJson && enableNestedParse && (
+            {enableNestedParse && (
               <button
                 onClick={() => {
                   const newNestedParse = !nestedParse;

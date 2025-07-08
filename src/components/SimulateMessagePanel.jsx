@@ -4,7 +4,9 @@ import { Tabs } from "@mantine/core";
 import JsonViewer from "./JsonViewer";
 
 const SimulateMessagePanel = ({ connection, onSimulateMessage }) => {
-  const [simulateMessage, setSimulateMessage] = useState('{\n  "message": "Hello World",\n  "timestamp": "2025-01-01T00:00:00Z"\n}');
+  const [simulateMessage, setSimulateMessage] = useState(
+    '{\n  "message": "Hello World",\n  "timestamp": "2025-01-01T00:00:00Z"\n}'
+  );
   const [isSending, setIsSending] = useState(false);
   const [isWindowOpen, setIsWindowOpen] = useState(false);
   const [isPinned, setIsPinned] = useState(false);
@@ -14,13 +16,18 @@ const SimulateMessagePanel = ({ connection, onSimulateMessage }) => {
 
   // Load saved state from localStorage
   useEffect(() => {
-    const savedState = localStorage.getItem('simulateMessagePanel');
+    const savedState = localStorage.getItem("simulateMessagePanel");
     if (savedState) {
       try {
         const parsed = JSON.parse(savedState);
-        setSimulateMessage(parsed.message || '{\n  "message": "Hello World",\n  "timestamp": "2025-01-01T00:00:00Z"\n}');
+        setSimulateMessage(
+          parsed.message ||
+            '{\n  "message": "Hello World",\n  "timestamp": "2025-01-01T00:00:00Z"\n}'
+        );
         setIsPinned(parsed.isPinned || false);
-        setWindowPosition(parsed.position || { x: window.innerWidth - 420, y: 100 });
+        setWindowPosition(
+          parsed.position || { x: window.innerWidth - 420, y: 100 }
+        );
         setWindowSize(parsed.size || { width: 400, height: 500 });
       } catch (error) {
         console.error("Failed to load saved state:", error);
@@ -39,20 +46,27 @@ const SimulateMessagePanel = ({ connection, onSimulateMessage }) => {
       position: windowPosition,
       size: windowSize,
     };
-    localStorage.setItem('simulateMessagePanel', JSON.stringify(stateToSave));
+    localStorage.setItem("simulateMessagePanel", JSON.stringify(stateToSave));
   }, [simulateMessage, isPinned, windowPosition, windowSize]);
 
   // Handle click outside to close (only when not pinned)
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (isWindowOpen && !isPinned && windowRef.current && !windowRef.current.contains(event.target) && !event.target.closest('.floating-simulate-button')) {
+      if (
+        isWindowOpen &&
+        !isPinned &&
+        windowRef.current &&
+        !windowRef.current.contains(event.target) &&
+        !event.target.closest(".floating-simulate-button")
+      ) {
         setIsWindowOpen(false);
       }
     };
 
     if (isWindowOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
     }
   }, [isWindowOpen, isPinned]);
 
@@ -78,11 +92,11 @@ const SimulateMessagePanel = ({ connection, onSimulateMessage }) => {
   };
 
   const handleMessageChange = (value) => {
-    console.log('📨 SimulateMessagePanel handleMessageChange:', {
+    console.log("📨 SimulateMessagePanel handleMessageChange:", {
       valueLength: value.length,
       currentMessageLength: simulateMessage.length,
-      valuePreview: value.substring(0, 100) + (value.length > 100 ? '...' : ''),
-      changed: value !== simulateMessage
+      valuePreview: value.substring(0, 100) + (value.length > 100 ? "..." : ""),
+      changed: value !== simulateMessage,
     });
     setSimulateMessage(value);
   };
@@ -126,12 +140,13 @@ const SimulateMessagePanel = ({ connection, onSimulateMessage }) => {
   return (
     <>
       {/* Floating toggle button */}
-      <div className={`floating-simulate-button ${isWindowOpen ? 'open' : ''}`} onClick={toggleWindow}>
-        <div className="simulate-icon">
-          {isWindowOpen ? '─' : '🎭'}
-        </div>
+      <div
+        className={`floating-simulate-button ${isWindowOpen ? "open" : ""}`}
+        onClick={toggleWindow}
+      >
+        <div className="simulate-icon">{isWindowOpen ? "─" : "🎭"}</div>
         <div className="simulate-tooltip">
-          {isWindowOpen ? 'Minimize Simulate' : 'Open Simulate'}
+          {isWindowOpen ? "Minimize Simulate" : "Open Simulate"}
         </div>
       </div>
 
@@ -155,7 +170,9 @@ const SimulateMessagePanel = ({ connection, onSimulateMessage }) => {
         >
           <div className="simulate-window-container" ref={windowRef}>
             {/* Window header - draggable area */}
-            <div className={`simulate-window-header ${isPinned ? 'pinned' : ''}`}>
+            <div
+              className={`simulate-window-header ${isPinned ? "pinned" : ""}`}
+            >
               <div className="simulate-window-title">
                 <span className="simulate-icon-small">🎭</span>
                 <span>Simulate Message</span>
@@ -166,14 +183,20 @@ const SimulateMessagePanel = ({ connection, onSimulateMessage }) => {
                 )}
               </div>
               <div className="simulate-window-controls">
-                <button 
-                  className={`window-control-btn pin ${isPinned ? 'active' : ''}`}
+                <button
+                  className={`window-control-btn pin ${
+                    isPinned ? "active" : ""
+                  }`}
                   onClick={togglePin}
-                  title={isPinned ? "Unpin - Click outside to close" : "Pin - Prevent close on outside click"}
+                  title={
+                    isPinned
+                      ? "Unpin - Click outside to close"
+                      : "Pin - Prevent close on outside click"
+                  }
                 >
-                  {isPinned ? '📌' : '📌'}
+                  {isPinned ? "📌" : "📌"}
                 </button>
-                <button 
+                <button
                   className="window-control-btn minimize"
                   onClick={minimizeWindow}
                   title="Minimize"
@@ -190,7 +213,11 @@ const SimulateMessagePanel = ({ connection, onSimulateMessage }) => {
                   <p>🔌 Please select a WebSocket connection first</p>
                 </div>
               ) : (
-                <Tabs variant="pills" defaultValue="editor" orientation="horizontal">
+                <Tabs
+                  variant="pills"
+                  defaultValue="editor"
+                  orientation="horizontal"
+                >
                   <Tabs.List>
                     <Tabs.Tab value="editor">📝 Editor</Tabs.Tab>
                     <Tabs.Tab value="favorites">⭐ Favorites</Tabs.Tab>
@@ -200,7 +227,10 @@ const SimulateMessagePanel = ({ connection, onSimulateMessage }) => {
                   <Tabs.Panel value="editor">
                     <div className="simulate-content">
                       <div className="simulate-input-container">
-                        <div className="simulate-input-editor" onKeyDown={handleKeyPress}>
+                        <div
+                          className="simulate-input-editor"
+                          onKeyDown={handleKeyPress}
+                        >
                           <JsonViewer
                             data={simulateMessage}
                             readOnly={false}
@@ -218,7 +248,9 @@ const SimulateMessagePanel = ({ connection, onSimulateMessage }) => {
                             onClick={() => handleSimulateMessage("incoming")}
                             disabled={!simulateMessage.trim() || isSending}
                           >
-                            {isSending ? "⏳ Sending..." : "📥 Simulate Receive"}
+                            {isSending
+                              ? "⏳ Sending..."
+                              : "📥 Simulate Receive"}
                           </button>
                           <button
                             className="simulate-btn outgoing"
