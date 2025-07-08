@@ -234,8 +234,6 @@
   border-color: var(--accent-color);
 }
 
-
-
 .simulate-actions {
   display: flex;
   justify-content: space-between;
@@ -368,7 +366,7 @@
   position: fixed;
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  box-shadow: 0px 7px 18px 5px rgb(0 0 0 / 55%);
+  box-shadow: 0px -2px 18px 3px rgb(0 0 0 / 69%);
   background-color: var(--bg-primary);
   overflow: hidden;
   display: flex;
@@ -427,14 +425,14 @@
 }
 
 .simulate-window-header.pinned .simulate-window-title::after {
-  content: '📌';
+  content: "📌";
   margin-left: 4px;
   font-size: 12px;
   opacity: 0.8;
 }
 
 .simulate-window-header::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 50%;
   top: 22%;
@@ -697,23 +695,23 @@
   .simulate-floating-window {
     min-width: 300px;
   }
-  
+
   .connection-indicator {
     display: none;
   }
-  
+
   .simulate-window-title {
     font-size: 12px;
   }
-  
+
   .floating-simulate-button {
     width: 50px;
     height: 50px;
     bottom: 16px;
     right: 16px;
   }
-  
+
   .simulate-icon {
     font-size: 20px;
   }
-} 
+}
