@@ -90,26 +90,8 @@
 
 .simulate-buttons {
   display: flex;
-  gap: 8px;
-  width: 100%;
-  justify-content: center;
-}
-
-.simulate-btn {
-  flex: 1;
-  padding: 8px 16px;
-  border: none;
-  border-radius: var(--radius);
-  color: white;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  min-width: 120px;
+  gap: 6px;
+  justify-content: flex-end;
 }
 
 .simulate-btn:hover:not(:disabled) {
@@ -124,25 +106,7 @@
   border-color: var(--border-color);
 }
 
-.simulate-btn.incoming {
-  background-color: var(--danger-color);
-  border-color: var(--danger-color);
-}
 
-.simulate-btn.incoming:hover:not(:disabled) {
-  background-color: #bd2130;
-  border-color: #bd2130;
-}
-
-.simulate-btn.outgoing {
-  background-color: var(--success-color);
-  border-color: var(--success-color);
-}
-
-.simulate-btn.outgoing:hover:not(:disabled) {
-  background-color: #1e7e34;
-  border-color: #1e7e34;
-}
 
 .clear-btn {
   padding: 8px 12px;
@@ -236,9 +200,10 @@
 
 .simulate-actions {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   flex-shrink: 0;
+  padding-top: 8px;
 }
 
 .simulate-info {
@@ -257,16 +222,20 @@
 }
 
 .simulate-btn {
-  padding: 8px 16px;
-  font-size: 12px;
-  font-weight: 600;
+  padding: 6px 12px;
   border: none;
   border-radius: var(--radius);
+  color: white;
+  font-size: 11px;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
   display: flex;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
+  gap: 3px;
+  min-width: 80px;
+  max-width: 200px;
 }
 
 .simulate-btn:disabled {
@@ -274,33 +243,34 @@
   cursor: not-allowed;
 }
 
+
+
 .simulate-btn.incoming {
-  background-color: var(--success-color);
-  color: white;
+  background-color: #dc2626;
+  color: #ffffff;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 3px;
 }
 
 .simulate-btn.incoming:hover:not(:disabled) {
-  background-color: #1e7e34;
+  background-color: #b91c1c;
+  color: #ffffff;
 }
 
 .simulate-btn.outgoing {
-  background-color: var(--accent-color);
-  color: white;
+  background-color: #16a34a;
+  color: #ffffff;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 3px;
 }
 
 .simulate-btn.outgoing:hover:not(:disabled) {
-  background-color: #0056b3;
-}
-
-.simulate-btn.add-favorite {
-  background-color: #f59e0b;
-  color: white;
-  border: 1px solid #f59e0b;
-}
-
-.simulate-btn.add-favorite:hover:not(:disabled) {
-  background-color: #d97706;
-  border-color: #d97706;
+  background-color: #15803d;
+  color: #ffffff;
 }
 
 /* System Window Styles - Added for react-rnd integration */
@@ -390,6 +360,8 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  background-color: #353535;
+  border-radius: 8px;
 }
 
 /* Window header - draggable area */
@@ -427,7 +399,7 @@
 .simulate-window-title {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   font-weight: 600;
   font-size: 14px;
   flex: 1;
@@ -436,7 +408,7 @@
 }
 
 .simulate-window-header.pinned .simulate-window-title::after {
-  content: "📌";
+  content: "●";
   margin-left: 4px;
   font-size: 12px;
   opacity: 0.8;
@@ -678,7 +650,7 @@
   min-height: 32px;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 10px;
 }
 
 .simulate-window-content .mantine-Tabs-tab:hover {

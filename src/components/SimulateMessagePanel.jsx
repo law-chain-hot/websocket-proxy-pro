@@ -9,6 +9,21 @@ import React, {
 } from "react";
 import { Rnd } from "react-rnd";
 import { Tabs } from "@mantine/core";
+import { 
+  FileText, 
+  Star, 
+  Settings, 
+  MessageSquare,
+  Wifi,
+  Pin,
+  Minus,
+  Download,
+  Upload,
+  Clock,
+  PinOff,
+  CircleArrowDown,
+  CircleArrowUp,
+} from "lucide-react";
 import JsonViewer from "./JsonViewer";
 import useWindowConstraints from "../hooks/useWindowConstraints";
 import useAutoResize from "../hooks/useAutoResize";
@@ -309,13 +324,21 @@ const SimulateMessagePanel = forwardRef(
     );
 
     // 优化按钮状态计算
-    const isAddFavoriteDisabled = useMemo(
-      () => !simulateMessage.trim(),
-      [simulateMessage]
-    );
     const isSimulateDisabled = useMemo(
       () => !simulateMessage.trim() || isSending,
       [simulateMessage, isSending]
+    );
+
+    // 可复用的模拟按钮组件
+    const SimulateButton = ({ direction, icon: Icon, label, className }) => (
+      <button
+        className={`simulate-btn ${className}`}
+        onClick={() => handleSimulateMessage(direction)}
+        disabled={isSimulateDisabled}
+      >
+        <Icon size={16} />
+        {label}
+      </button>
     );
 
     // 优化：使用useMemo缓存FavoritesTab props，避免不必要的重渲染
@@ -336,7 +359,9 @@ const SimulateMessagePanel = forwardRef(
             className={`floating-simulate-button ${isWindowOpen ? "open" : ""}`}
             onClick={toggleWindow}
           >
-            <div className="simulate-icon">{isWindowOpen ? "─" : "🎭"}</div>
+            <div className="simulate-icon">
+              {isWindowOpen ? <Minus size={24} /> : <MessageSquare size={24} />}
+            </div>
             <div className="simulate-tooltip">
               {isWindowOpen ? "Minimize Simulate" : "Open Simulate"}
             </div>
@@ -368,7 +393,7 @@ const SimulateMessagePanel = forwardRef(
                 className={`simulate-window-header ${isPinned ? "pinned" : ""}`}
               >
                 <div className="simulate-window-title">
-                  <span className="simulate-icon-small">🎭</span>
+                  <MessageSquare size={16} className="simulate-icon-small" />
                   <span>Simulate Message</span>
                   {connection && (
                     <span className="connection-indicator">
@@ -388,14 +413,14 @@ const SimulateMessagePanel = forwardRef(
                         : "Pin - Prevent close on outside click"
                     }
                   >
-                    {isPinned ? "📌" : "📌"}
+                    {isPinned ? <Pin size={12} /> : <PinOff size={12} />}
                   </button>
                   <button
                     className="window-control-btn minimize"
                     onClick={minimizeWindow}
                     title="Minimize"
                   >
-                    ─
+                    <Minus size={12} />
                   </button>
                 </div>
               </div>
@@ -404,7 +429,7 @@ const SimulateMessagePanel = forwardRef(
               <div className="simulate-window-content">
                 {!connection ? (
                   <div className="simulate-panel-empty floating">
-                    <p>🔌 Please select a WebSocket connection first</p>
+                    <p><Wifi size={16} style={{display: 'inline', marginRight: '10px'}} />Please select a WebSocket connection first</p>
                   </div>
                 ) : (
                   <Tabs
@@ -414,9 +439,9 @@ const SimulateMessagePanel = forwardRef(
                     orientation="horizontal"
                   >
                     <Tabs.List>
-                      <Tabs.Tab value="editor">📝 Editor</Tabs.Tab>
-                      <Tabs.Tab value="favorites">⭐ Favorites</Tabs.Tab>
-                      <Tabs.Tab value="system">🔧 System</Tabs.Tab>
+                      <Tabs.Tab value="editor" leftSection={<FileText size={14} />}>Editor</Tabs.Tab>
+                      <Tabs.Tab value="favorites" leftSection={<Star size={14} />}>Favorites</Tabs.Tab>
+                      <Tabs.Tab value="system" leftSection={<Settings size={14} />}>System</Tabs.Tab>
                     </Tabs.List>
 
                     <Tabs.Panel value="editor">
@@ -440,30 +465,18 @@ const SimulateMessagePanel = forwardRef(
 
                         <div className="simulate-actions">
                           <div className="simulate-buttons">
-                            <button
-                              className="simulate-btn add-favorite"
-                              onClick={handleAddToFavorites}
-                              disabled={isAddFavoriteDisabled}
-                              title="Add to Favorites"
-                            >
-                              ⭐ Add to Favorites
-                            </button>
-                            <button
-                              className="simulate-btn incoming"
-                              onClick={() => handleSimulateMessage("incoming")}
-                              disabled={isSimulateDisabled}
-                            >
-                              {isSending
-                                ? "⏳ Sending..."
-                                : "📥 Simulate Receive"}
-                            </button>
-                            <button
-                              className="simulate-btn outgoing"
-                              onClick={() => handleSimulateMessage("outgoing")}
-                              disabled={isSimulateDisabled}
-                            >
-                              {isSending ? "⏳ Sending..." : "📤 Simulate Send"}
-                            </button>
+                            <SimulateButton
+                              direction="incoming"
+                              icon={CircleArrowDown}
+                              label="Simulate Receive"
+                              className="incoming"
+                            />
+                            <SimulateButton
+                              direction="outgoing"
+                              icon={CircleArrowUp}
+                              label="Simulate Send"
+                              className="outgoing"
+                            />
                           </div>
                         </div>
                       </div>
@@ -475,7 +488,9 @@ const SimulateMessagePanel = forwardRef(
 
                     <Tabs.Panel value="system">
                       <div className="tab-content-placeholder">
-                        <div className="placeholder-icon">🔧</div>
+                        <div className="placeholder-icon">
+                          <Settings size={48} />
+                        </div>
                         <h4>System Events</h4>
                         <p>Simulate WebSocket system events and states</p>
                         <div className="feature-list">

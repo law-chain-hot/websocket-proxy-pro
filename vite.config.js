@@ -8,9 +8,6 @@ export default defineConfig(({ mode }) => ({
     webExtension({
       manifest: "./src/manifest.json",
       watchFilePaths: ["src/**/*"],
-      webExtConfig: {
-        startUrl: "https://example.com",
-      },
       additionalInputs: [
         "src/content/injected.js",
         "src/devtools/panel.html",

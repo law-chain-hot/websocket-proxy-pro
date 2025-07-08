@@ -23,6 +23,8 @@ import {
   Download,
   Send,
   Check,
+  CircleArrowDown,
+  CircleArrowUp,
 } from "lucide-react";
 import JsonViewer from "./JsonViewer";
 import favoritesService from "../utils/favoritesService";
@@ -59,10 +61,10 @@ const FavoritesItem = React.memo(
       );
     }, [favorite.updatedAt, favorite.createdAt]);
 
-    // 缓存预览文本，使用纯文本显示前50个字符
+    // 缓存预览文本，使用纯文本显示前150个字符
     const preview = useMemo(() => {
       const text = favorite.data.replace(/\s+/g, " ").trim();
-      return text.substring(0, 50) + (text.length > 50 ? "..." : "");
+      return text.substring(0, 150) + (text.length > 150 ? "..." : "");
     }, [favorite.data]);
 
     // 优化：减少useCallback的依赖项，使用稳定的favorite.id
@@ -178,9 +180,9 @@ const FavoritesItem = React.memo(
         onMouseLeave={handleMouseLeave}
       >
         <div className="favorite-item-content" onClick={handleSelect}>
-          <div className="favorite-item-main">
-            <div className="favorite-item-info">
-              <div className="favorite-item-header">
+          <div className="favorite-item-info">
+            <div className="favorite-item-header">
+              <div className="favorite-item-title-section">
                 {isEditing ? (
                   <TextInput
                     value={editName}
@@ -209,14 +211,15 @@ const FavoritesItem = React.memo(
                   </Badge>
                 )}
               </div>
-              {!isEditing && (
-                <div className="favorite-item-details">
-                  <span className="favorite-item-preview">{preview}</span>
-                </div>
-              )}
             </div>
+            {!isEditing && (
+              <div className="favorite-item-details">
+                <span className="favorite-item-preview">{preview}</span>
+              </div>
+            )}
           </div>
-
+          
+          {/* Actions positioned absolutely to overlay on hover */}
           <div
             className={`favorite-item-actions ${
               isHovered || isSelected || isEditing ? "visible" : ""
@@ -231,7 +234,7 @@ const FavoritesItem = React.memo(
                   onClick={handleCancelEditClick}
                   title="Cancel"
                 >
-                  <X size={16} />
+                  <X size={18} />
                 </ActionIcon>
                 <ActionIcon
                   variant="subtle"
@@ -241,7 +244,7 @@ const FavoritesItem = React.memo(
                   disabled={!editName.trim() || !editData.trim()}
                   title="Save"
                 >
-                  <Check size={16} />
+                  <Check size={18} />
                 </ActionIcon>
               </>
             ) : (
@@ -253,7 +256,7 @@ const FavoritesItem = React.memo(
                   onClick={handleReceive}
                   title="Simulate Receive"
                 >
-                  <Download size={16} />
+                  <CircleArrowDown size={18} />
                 </ActionIcon>
                 <ActionIcon
                   variant="subtle"
@@ -262,7 +265,7 @@ const FavoritesItem = React.memo(
                   onClick={handleSend}
                   title="Simulate Send"
                 >
-                  <Send size={16} />
+                  <CircleArrowUp size={18} />
                 </ActionIcon>
                 <ActionIcon
                   variant="subtle"
@@ -271,7 +274,7 @@ const FavoritesItem = React.memo(
                   onClick={handleStartEdit}
                   title="Edit"
                 >
-                  <Edit size={16} />
+                  <Edit size={18} />
                 </ActionIcon>
                 <ActionIcon
                   variant="subtle"
@@ -280,7 +283,7 @@ const FavoritesItem = React.memo(
                   onClick={handleDelete}
                   title="Delete"
                 >
-                  <Trash2 size={16} />
+                  <Trash2 size={18} />
                 </ActionIcon>
               </>
             )}
